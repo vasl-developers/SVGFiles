@@ -1,0 +1,40 @@
+My development environment, other configurations are possible.
+
+Install Cygwin https://www.cygwin.com
+
+Install Rust Toolchain. https://rust-lang.org
+
+Check out vasl_svg_counters and check out or extract VASL vmod
+
+	The directory/folder for vasl_svg_counters and the VASL vmod should be in the same parent folder
+	(e.g., my cygwin home folder is "C:\cygwin64\home\Gordon" and contains the sub-folders "vasl_svg_counters"
+	and "vasl-6.6.8").
+	
+	Within the cygwin command window:
+	
+		cd vasl_svg_counters
+
+		To compile the executables and generate the vehicle and gun SVG counters (into the folder "../vasl-6.6.8/images") for all the nationalties.
+			
+			bash run_all.sh "../vasl-6.6.8/images"
+
+		To clean the executables/libraries and remove all generated SVG files.
+	
+			bash clean_all.sh
+
+		To complile the executables and generate JUST the vehicle SVG counters (into the folder "../vasl-6.6.8/images") for all the nationalities.
+
+			bash run_vehicles.sh "../vasl-6.6.8/images"
+
+		To complile the executables and generate JUST the gun SVG counters (into the folder "../vasl-6.6.8/images") for all the nationalities.
+
+			bash run_ordnance.sh "../vasl-6.6.8/images"
+
+		To complile the executables and generate the vehicle SVG counters for a single nationality (into the folder "../vasl-6.6.8/images").
+
+			cargo run --bin generate_vehicle_counters "../vasl-6.6.8/images" < data/allied_vehicles.csv
+
+		To complile the executables and generate the gun SVG counters for a single nationality (into the folder "../vasl-6.6.8/images").
+
+			cargo run --bin generate_ordnance_counters "../vasl-6.6.8/images" < data/axis_ordnance.csv
+		
