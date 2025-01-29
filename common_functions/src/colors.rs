@@ -1,21 +1,24 @@
 //
 // Color choices.
 //
-pub const ALLIED_COLOR: &'static str =		"#82edbd";
-pub const AMERICAN_COLOR: &'static str =	"#cdf000";
-pub const AXIS_COLOR: &'static str =		"#1de256";
-pub const BRITISH_COLOR: &'static str =		"#e5cea0";
-pub const FRENCH_COLOR: &'static str =		"#41a5ff";
-pub const FINNISH_COLOR: &'static str =		"#ced3d3";
-pub const GERMAN_COLOR: &'static str =		"#91cdf5";
-pub const ITALIAN_COLOR: &'static str =		"#a6adb2";
-pub const JAPANESE_COLOR: &'static str =	"#ffdb00";
-pub const RUSSIAN_COLOR: &'static str =		"#d68d1a";
-pub const WAFFEN_SS_COLOR: &'static str =	"#000000";
-pub const LAVENDER_SS_COLOR: &'static str =	"#e6e6fa";
-pub const SWEDISH_COLOR: &'static str =		"#629dcb";
-pub const TEST_COLOR: &'static str =		"#ffc0ff";
-pub const UNDEFINED_COLOR: &'static str =	"";
+pub const ALLIED_COLOR: &'static str =			"#82edbd";
+pub const AMERICAN_COLOR: &'static str =		"#cdf000";
+pub const AXIS_COLOR: &'static str =			"#1de256";
+pub const BRITISH_COLOR: &'static str =			"#e5cea0";
+pub const FINNISH_COLOR: &'static str =			"#ced3d3";
+pub const FRENCH_COLOR: &'static str =			"#41a5ff";
+pub const GERMAN_COLOR: &'static str =			"#91cdf5";
+pub const ITALIAN_COLOR: &'static str =			"#a6adb2";
+pub const JAPANESE_COLOR: &'static str =		"#ffdb00";
+pub const RUSSIAN_COLOR: &'static str =			"#d68d1a";
+pub const WAFFEN_SS_COLOR: &'static str =		"#000000";
+pub const LAVENDER_SS_COLOR: &'static str =		"#e6e6fa";
+pub const SWEDISH_COLOR: &'static str =			"#629dcb";
+pub const BOAT_COLOR: &'static str =			"#91cdf5"; // Same as GERMAN_COLOR
+pub const SHARED_COLOR: &'static str =			"#ffffff";
+pub const LANDED_GLIDER_COLOR: &'static str =	"#52A552";
+pub const TEST_COLOR: &'static str =			"#ffc0ff";
+pub const UNDEFINED_COLOR: &'static str =		"";
 
 pub const BLACK: &'static str =	"black";
 pub const WHITE: &'static str =	"white";
@@ -121,6 +124,9 @@ pub fn nationality_to_color(nationality: &String) -> Vec<String> {
 		"nk" | "pa" | "ru" => {
 			background_color = RUSSIAN_COLOR;
 		}
+		"sh" => {
+			background_color = SHARED_COLOR;
+		}
 		"sk" => {
 			background_color = AMERICAN_COLOR;
 			inner_background_color = BRITISH_COLOR;
@@ -138,6 +144,16 @@ pub fn nationality_to_color(nationality: &String) -> Vec<String> {
 		"vf" => {
 			background_color = GERMAN_COLOR;
 			inner_background_color = FRENCH_COLOR;
+		}
+		"bt" => { // Landing craft and boats
+			background_color = BOAT_COLOR;
+		}
+		"gd" => {
+			background_color = LANDED_GLIDER_COLOR;
+		}
+		"jk" => {	// Japanese/Korean ?
+			background_color = RUSSIAN_COLOR;
+			inner_background_color = JAPANESE_COLOR;
 		}
 		&_ => {
 			background_color = TEST_COLOR;
@@ -159,7 +175,10 @@ pub fn nationality_to_colors(nationality: &String) -> Colors {
 	result.background = colors_v[0].clone();
 	result.inner_background = colors_v[1].clone();
 
-	if nationality == "ss" {
+	if "sh" == nationality {
+		result.movement_type = "#b4b4b4".to_string();
+		result.small_unarmored_target_stroke = "black".to_string();
+	} else if "ss" == nationality {
 		result.is_ss = true;
 		result.turret_type = "#b4b4b4".to_string();
 		result.movement_type = "#b4b4b4".to_string();
@@ -172,7 +191,6 @@ pub fn nationality_to_colors(nationality: &String) -> Colors {
 		result.manhandling_fill = "white".to_string();
 		result.unhooking_penalty_color = "white".to_string();
 	}
-
 	
 	return result;
 }

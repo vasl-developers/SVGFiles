@@ -9,13 +9,7 @@ fi
 
 date
 
-for i in al am ax br ch fi cc nk sk un us fr ge hu it ja ru ss
-do
-	echo "Cleaning ${i} ordnance"
-	rm -f ${DESTINATION}/${i}/gun/*.svg
-	echo "Cleaning ${i} vehicles"
-	rm -f ${DESTINATION}/${i}/veh/*.svg
-done
+bash clean_all.sh ${DESTINATION}
 
 for j in allied american axis british chinese communist finnish french german italian japanese russian un
 do
@@ -34,4 +28,22 @@ do
 	fi	
 done
 
+VEH_FILE=data/landing_craft_and_boats.csv
+if [ -f "${VEH_FILE}" ]
+then
+	echo "Generating landing craft and boats"
+	cargo run --bin generate_landing_craft_counters ${DESTINATION} < ${VEH_FILE}
+fi
+VEH_FILE=data/shared_vehicles.csv
+if [ -f "${VEH_FILE}" ]
+then
+	echo "Generating shared vehicles"
+	cargo run --bin generate_vehicle_counters ${DESTINATION} < ${VEH_FILE}
+fi
+VEH_FILE=data/aircraft.csv
+if [ -f "${VEH_FILE}" ]
+then
+	echo "Generating aircraft"
+	cargo run --bin generate_aircraft_counters ${DESTINATION} < ${VEH_FILE}
+fi
 date

@@ -8,41 +8,43 @@ use crate::utils::*;
 //
 pub const OVERRIDE_DELIMITER: char =	'|';		// Delimiter to separate multiple overrides.
 
-pub const NOVR_ANNOUNCE: &str =				"announce";		// Announce the line.
-pub const NOVR_ARMOR_FRONT: &str =			"far=";			// Front armor.
-pub const NOVR_ARMOR_SIDE: &str =			"sar=";			// Side armor.
-pub const NOVR_ARMOR_REAR: &str =			"rar=";			// Rear armor.
-pub const NOVR_BACKGROUND_COLOR: &str =		"bkg=";			// Override the counter's background color.
-pub const NOVR_CAPTURED: &str =				"cap=";			// Piece is captured.
-pub const NOVR_COPY: &str =					"copy";
-pub const NOVR_FIXED_BMG: &str =			"fixed_bmg";	// Fixed BMG. Following the '@' is the x-axis center of the white circle that should be displayed behind the BMG factor.
-pub const NOVR_GP: &str =					"gp=";
-pub const NOVR_GT: &str =					"gt=";
-pub const NOVR_IFE: &str =					"ife=";
-pub const NOVR_IGNORE: &str =				"ignore";		// Ignore entry (or reverse counter creation).
-pub const NOVR_MA: &str =					"ma=";			// Main armament.
-pub const NOVR_MANHANDLING: &str =			"man=";			// Manhandling.
-pub const NOVR_MA_MOVING_TARGET: &str =		"ma_movt";		// Main armament moving target penalty.
-pub const NOVR_MB: &str =					"mb=";			// Main armament breakdown.
-pub const NOVR_MGS: &str =					"mgs=";			// Override BMG/CMG/AAMG values.
-pub const NOVR_MOUNT: &str =				"mount=";		// Mount or turret type (e.g., T - "Fast Turret", NT - "Non-turreted", etc.
-pub const NOVR_MP: &str =					"mp=";
-pub const NOVR_MT: &str =					"mt=";			// Override movement type normally extracted from "name" field.
-pub const NOVR_MULTIPLE_HITS: &str =		"multi_hits";	// Main armament is eligible for multiple hits.
-pub const NOVR_NAME: &str =					"name=";		// Replace name on counter and in SVG documentation.
-pub const NOVR_NATIONALITY: &str =			"nat=";			// Provides nationality for vehicle counters that don't include it in the piece name like ordnance pieces do and for Axis Minors which have unique prefixes.
-pub const NOVR_QUALIFIER: &str =			"qual=";
-pub const NOVR_PP_NUMBER: &str =			"pp=";			// PP number.
-pub const NOVR_RANGE: &str =				"range=";		// Show range value(s), override values with MOD_TEXT (include '[' and ']'), can also specify alternate location (MOD_LOCATION) and font size (MOD_FONT_SIZE).
-pub const NOVR_RANGE2: &str =				"range2=";		// Show alternate range value(s), override values with MOD_TEXT (include '[' and ']'), can also specify alternate location (MOD_LOCATION) and font size (MOD_FONT_SIZE).
-pub const NOVR_ROF: &str =					"rof=";
-pub const NOVR_SA: &str =					"sa=";			// Secondary armament.
-pub const NOVR_SA_MOVING_TARGET: &str =		"sa_movt";		// Secondary armament moving target penalty.
-pub const NOVR_SB: &str =					"sb=";			// Secondary armament breakdown.
-pub const NOVR_TA: &str =					"ta=";			// Turret armor modifies (Superior, inferior ...).
-pub const NOVR_SIZE: &str =					"size=";		// Target size.
-pub const NOVR_SPECIAL_AMMO: &str =			"ammo=";		// Special ammunition values, override values with MOD_TEXT (include '[' and ']'), can also specify alternate location (MOD_LOCATION) and font size (MOD_FONT_SIZE).
-pub const NOVR_TOWING_NUMBER: &str =		"tow=";			// Towing number.
+pub const NOVR_ANNOUNCE: &str =				"announce";			// Announce the line.
+pub const NOVR_SPECIAL_AMMO: &str =			"ammo=";			// Special ammunition values, override values with MOD_TEXT (include '[' and ']'), can also specify alternate location (MOD_LOCATION) and font size (MOD_FONT_SIZE).
+pub const NOVR_BACKGROUND_COLOR: &str =		"bkg=";				// Override the counter's background color.
+pub const NOVR_CAPTURED: &str =				"cap=";				// Piece is captured.
+pub const NOVR_COPY: &str =					"copy";	
+pub const NOVR_DISPLAY_NAME: &str =			"display_name";		// Display name (overrides INCLUDE_NAME)
+pub const NOVR_FIXED_BMG: &str =			"fixed_bmg";		// Fixed BMG. Following the '@' is the x-axis center of the white circle that should be displayed behind the BMG factor.
+pub const NOVR_GP: &str =					"gp=";	
+pub const NOVR_GT: &str =					"gt=";	
+pub const NOVR_IFE: &str =					"ife=";	
+pub const NOVR_IGNORE: &str =				"ignore";			// Ignore entry (or reverse counter creation).
+pub const NOVR_MA: &str =					"ma=";				// Main armament.
+pub const NOVR_MANHANDLING: &str =			"man=";				// Manhandling.
+pub const NOVR_MA_MOVING_TARGET: &str =		"ma_movt";			// Main armament moving target penalty.
+pub const NOVR_MB: &str =					"mb=";				// Main armament breakdown.
+pub const NOVR_MGS: &str =					"mgs=";				// Override BMG/CMG/AAMG values.
+pub const NOVR_MOUNT: &str =				"mount=";			// Mount or turret type (e.g., T - "Fast Turret", NT - "Non-turreted", etc.
+pub const NOVR_MP: &str =					"mp=";	
+pub const NOVR_MT: &str =					"mt=";				// Override movement type normally extracted from "name" field.
+pub const NOVR_MULTIPLE_HITS: &str =		"multi_hits";		// Main armament is eligible for multiple hits.
+pub const NOVR_NATIONALITY: &str =			"nat=";				// Provides nationality for vehicle counters that don't include it in the piece name like ordnance pieces do and for Axis Minors which have unique prefixes.
+pub const NOVR_NAME: &str =					"name=";			// Replace name on counter and in SVG documentation.
+pub const NOVR_PP_NUMBER: &str =			"pp=";				// PP number.
+pub const NOVR_QUALIFIER: &str =			"qual=";	
+pub const NOVR_RANGE: &str =				"range=";			// Show range value(s), override values with MOD_TEXT (include '[' and ']'), can also specify alternate location (MOD_LOCATION) and font size (MOD_FONT_SIZE).
+pub const NOVR_RANGE2: &str =				"range2=";			// Show alternate range value(s), override values with MOD_TEXT (include '[' and ']'), can also specify alternate location (MOD_LOCATION) and font size (MOD_FONT_SIZE).
+pub const NOVR_ROF: &str =					"rof=";	
+pub const NOVR_SA: &str =					"sa=";				// Secondary armament.
+pub const NOVR_SA_MOVING_TARGET: &str =		"sa_movt";			// Secondary armament moving target penalty.
+pub const NOVR_SB: &str =					"sb=";				// Secondary armament breakdown.
+pub const NOVR_SHIFT_ARMOR: &str =			"shift_armor_down";	// Shift armor values down.
+pub const NOVR_SIZE: &str =					"size=";			// Target size.
+pub const NOVR_TA: &str =					"ta=";				// Turret armor modifies (Superior, inferior ...).
+pub const NOVR_TOWING_NUMBER: &str =		"tow=";				// Towing number.
+pub const NOVR_ARMOR_FRONT: &str =			"far=";				// Front armor.
+pub const NOVR_ARMOR_SIDE: &str =			"sar=";				// Side armor.
+pub const NOVR_ARMOR_REAR: &str =			"rar=";				// Rear armor.
 //
 // Modifiers to new hotness overrides.
 //
@@ -98,12 +100,14 @@ pub struct ArmamentOverrides {
 #[derive(Clone)]
 pub struct Overrides {
 	pub announce: bool,
+	pub shift_armor_down: bool,
 	pub armor_front: String,
 	pub armor_rear: String,
 	pub armor_side: String,
 	pub background_color: String,
 	pub captured: String,
 	pub copy: bool,
+	pub display_name: bool,
 	pub fixed_bmg: bool,
 	pub ground_pressure: String,
 	pub gt: String,
@@ -140,6 +144,8 @@ impl Overrides {
 			for entry in entries {
 				if entry.contains(NOVR_ANNOUNCE) {
 					self.announce = true;
+				} else if NOVR_SHIFT_ARMOR == entry {
+					self.shift_armor_down = true;
 				} else if entry.contains(NOVR_ARMOR_FRONT) {
 					self.armor_front = extract_from(&entry, NOVR_ARMOR_FRONT);
 				} else if entry.contains(NOVR_ARMOR_REAR) {
@@ -152,6 +158,8 @@ impl Overrides {
 					self.captured = extract_from(&entry, NOVR_CAPTURED);
 				} else if entry.contains(NOVR_COPY) {
 					self.copy = true;
+				} else if entry.contains(NOVR_DISPLAY_NAME) {
+					self.display_name = true;
 				} else if entry.contains(NOVR_FIXED_BMG) {
 					self.fixed_bmg = true;
 				} else if entry.contains(NOVR_GP) {

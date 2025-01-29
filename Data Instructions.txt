@@ -148,9 +148,10 @@ Spreadsheet updating/editing:
 	
 	"sb=<XXX>"		Secondary armament breakdown, as per Main armament breakdown above.
 	
-	"ta=<XXX>"		Replace the turret armor values using the same format as the "ta" column (e.g., "ta=-F/+SR" - inferior front armor, superior side/rear armor).
+	"shift_armor_down"	Shift the armor values down. Used by the shared searchlight trailer (SL) counter to allow placement of manhandling number.
 	
 	"size=<XX>"		Target size ("-3", "-2", "-1", "0", "1", "2").
+	"ta=<XXX>"			Replace the turret armor values using the same format as the "ta" column (e.g., "ta=-F/+SR" - inferior front armor, superior side/rear armor).
 	
 	"ammo=<XX>"		Special ammunition values, e.g., German Ordnance note #6.
 	

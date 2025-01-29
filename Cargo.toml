@@ -1,12 +1,20 @@
 [workspace]
-members = [ "common_functions", "generate_ordnance_counters", "generate_vehicle_counters" ]
+members = [
+	"common_functions",
+	"generate_ordnance_counters",
+	"generate_vehicle_counters",
+	"generate_landing_craft_counters",
+	"generate_aircraft_counters",
+	"generate_multiman_counters",
+	"generate_singleman_counters"
+]
 resolver = "2"
 
 [workspace.package]
 #name = "vasl_svg_counters"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
-authors = ["Gordon Molek", "Klas Malmström"]
+authors = ["Gordon Molek", "Klas Malmström", "Alan Bills"]
 description = "Tools to generate VASL vehicle and ordnance counters from CSV files of counter attributes."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

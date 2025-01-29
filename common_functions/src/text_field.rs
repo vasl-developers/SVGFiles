@@ -119,7 +119,7 @@ pub const SPECIAL_AMMO_SUPERSCRIPT_FONT_SIZE: f64 =	  6.0;
 pub const BREAKDOWN_NOTE_FONT_POS_DELTA: f64 =		  1.2;
 pub const LOW_AMMO_BREAKDOWN_FONT_NEG_DELTA: f64 =	  1.2;
 pub const TRANSPORT_SUPERSCRIPT_FONT_SIZE: f64 =	  4.8;
-pub const NAME_FONT_SIZE: f64 =						  1.0;
+pub const NAME_FONT_SIZE: f64 =						  6.0;
 pub const SIX_LOBED_ASTERISK_FONT_SIZE: f64 =		  4.8;
 
 pub const MGS_SIX_LOBED_ASTERISK_FONT_SIZE_STR: &str =	"4.2";	// formatcp!() doesn't handle floats.
@@ -139,6 +139,7 @@ pub const SUPER: char =						'^';
 pub const MINUS: char =						'-';
 pub const EQUALS: char =					'=';
 pub const UNDERLINE: char =					'_';
+pub const RAMP_DOT: char =					'•';
 //
 // Copy the appropriate original data scrubbed of Daggers (and their superscripts if present).
 // Used as part of the override/limber system.

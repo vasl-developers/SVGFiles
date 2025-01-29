@@ -17,6 +17,7 @@ pub struct CommonRecord {
 	pub nationality: String,
 	pub note: String,
 	pub name: String,
+	pub display_name: bool,
 	pub turret: Turret,
 	pub ma: Armament,
 	pub malfunction: Malfunction,
@@ -66,10 +67,12 @@ impl CommonRecord {
 		self.svg_image_transform = svg_image_transform.to_string();
 		
 		self.comments = comments.to_string();
+		
+		self.display_name = self.overrides.display_name;
 	}
 }
 
-fn extract_note_number(source: &String) -> std::string::String {
+pub fn extract_note_number(source: &String) -> std::string::String {
 	let re = Regex::new(r"(?<keep>[0-9gv][0-9a-zA-Z\.]*)").unwrap();
 	let Some(caps) = re.captures(&source) else { panic!("extract_note_number regex failed!") };
 

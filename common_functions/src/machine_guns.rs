@@ -115,6 +115,59 @@ impl MachineGuns {
 		self.fixed_bmg = overrides.fixed_bmg;
 	}	
 
+	pub fn sanitize_single(&mut self, mgs: &String, overrides: &Overrides, colors: &Colors) {
+		self.field.color = colors.text.to_string();
+		self.field.fonts.initialize(MGS_FONTS);
+		
+		if overrides.machine_guns_set {
+			let entry = overrides.machine_guns.clone();
+			let entries: Vec<std::string::String> = extract_vector(&entry, MOD_DELIMITER2);
+			let mut mgs_value_read: bool = false;
+			
+			for entry in &entries {
+				if !mgs_value_read {
+					self.field.text = entry.to_string(); // COPY_FIELD not needed!
+					mgs_value_read = true;
+				} else if entry.contains(MOD_INC_SIZE) {
+					let temp: String = extract_from(&entry, MOD_INC_SIZE);
+				
+					self.field.fonts.adjust_size(temp.parse::<f64>().unwrap_or(0.0));
+				} else if entry.contains(MOD_DEC_SIZE) {
+					let temp: String = extract_from(&entry, MOD_DEC_SIZE);
+					
+					self.field.fonts.adjust_size(temp.parse::<f64>().unwrap_or(0.0) * -1.0);
+				} else if is_alternate_location(entry.to_string()) {
+					self.field.alternate_location = entry.to_string();
+				} else {
+					panic!("sanitize MGs@{0}: unimplemented! entry '{1}'", line!(), entry);
+				}
+			}			
+		} else {
+			let mut my_mgs: String = strip_opt(&mgs);
+
+			if my_mgs.contains(DAGGER) {
+				my_mgs = strip_dagger_and_any_superscript_from_end(&my_mgs);
+
+				if !overrides.fixed_bmg {
+					my_mgs.push_str(&FIVE_LOBED_ASTERISK_UC.to_string());
+				}
+			}
+
+			if !my_mgs.is_empty() {
+				self.field.text.push_str(&my_mgs);
+			}
+		}
+
+		self.field.text = convert_text(&self.field.text, FIVE_LOBED_ASTERISK_TAG, FIVE_LOBED_ASTERISK_UC);
+		self.field.text = convert_text(&self.field.text, SIX_LOBED_ASTERISK_TAG, SIX_LOBED_ASTERISK_MG_SVG);
+
+		if self.field.text.contains("<sup>") {
+			self.field.text = convert_superscripts(&self.field.text, MGS_SUPERSCRIPT_FONT_SIZE);
+		}
+			
+		self.fixed_bmg = overrides.fixed_bmg;
+	}
+	
 	pub fn generate_svg_elements(&mut self, mut counter_file: &std::fs::File) {
 		if !self.field.text.is_empty() {
 			let x_position = MGS_LINE_X_POSITION;

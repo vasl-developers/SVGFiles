@@ -146,7 +146,7 @@ fn generate_counter_front(mut counter_file: &std::fs::File, path: &String, unit_
 		record.common.turret.generate_svg_elements(&counter_file);
 	}
 	
-	generate_unit_depiction_svg(counter_file, &path, &unit_depiction, &record.common.note, &record.common.svg_image_transform, true, &record.common.name, &record.common.colors);
+	generate_unit_depiction_svg(counter_file, &path, &unit_depiction, &record.common.note, &record.common.svg_image_transform, true, &record.common.name, record.common.display_name, &record.common.colors);
 
 	generate_debug_working_area_svg(&counter_file);
 
@@ -228,7 +228,7 @@ fn generate_counters(record: &Record) {
 		Ok(counter_file) => counter_file,
 	};
 
-	generate_header_svg("vasl_ordnance_counters", &counter_file, &record.common.note, &name, &record.common.comments, &record.common.version);
+	generate_large_counter_header_svg_elements("vasl_ordnance_counters", &counter_file, &record.common.note, &name, &record.common.comments, &record.common.version);
 	generate_counter_front(&counter_file, &path, &unit_depiction, &record);
 	generate_footer_svg(&counter_file);
 
@@ -317,7 +317,7 @@ struct SpreadsheetRecord {
 	version: String,
 	piece: String,
 	r_x: String,
-	overrides: String,
+	overrides: String, // Overrides various items from the original CSV entry. '|'-separated list of overrides of the form "XXX=YYY" or just "ZZZ". See const declarations in overrides.rs for complete list.
 	limbered: String,
 	svg_image_transform: String,
 	reverse: String,

@@ -3,6 +3,7 @@ use std::env;
 use std::{io};
 use std::io::BufReader;
 use std::fs::File;
+use std::path::Path;
 use regex::Regex;
 //
 // Local files.
@@ -210,7 +211,15 @@ pub fn convert_text(source: &String, old_text: &str, new_text: &str) -> std::str
 }
 
 pub fn construct_path(nationality: &String, category: &'static str, destination: &String) -> std::string::String {
-	return format!("{destination}{nationality}/{category}/"); // destination includes a trailing '/'	
+	let result: String;
+	
+	if "sh" == nationality {
+		result = format!("{destination}{nationality}/"); // destination includes a trailing '/'	
+	} else {
+		result = format!("{destination}{nationality}/{category}/"); // destination includes a trailing '/'	
+	}
+	
+	return result;
 }
 
 pub fn construct_copy_paths(nationality: &String, category: &'static str, name: &String, destination: &String) -> Vec<String> {
@@ -222,6 +231,11 @@ pub fn construct_copy_paths(nationality: &String, category: &'static str, name: 
 	path = format!("{destination}{nationality}/{category}/{name}.svg"); // destination includes a trailing '/'	
 	result.push(path.clone());	// Destination.	
 	
+	return result;
+}
+
+pub fn file_exists(path: &String, piece_name: &String) -> bool {
+	let result: bool = Path::new(&format!("{path}{piece_name}.svg").to_string()).exists();
 	return result;
 }
 

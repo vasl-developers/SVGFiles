@@ -18,6 +18,7 @@ pub enum TurretType {
 	SlowTurret,
 	RestrictedSlowTurret,
 	OneManTurret,
+	SearchlightTurret,
 }
 
 impl fmt::Display for TurretType {
@@ -28,6 +29,7 @@ impl fmt::Display for TurretType {
             TurretType::SlowTurret => write!(f, "SlowTurret"),
             TurretType::RestrictedSlowTurret => write!(f, "RestrictedSlowTurret"),
 			TurretType::OneManTurret => write!(f, "OneManTurret"),
+			TurretType::SearchlightTurret => write!(f, "SearchlightTurret"),
         }
     }
 }
@@ -73,6 +75,13 @@ impl Turret {
 				write!(counter_file, "\t\t<circle cx=\"30.00\" cy=\"30.00\" r=\"25.00\" style=\"display:inline;fill:none;fill-opacity:1;stroke:{0};stroke-width:1.8;stroke-dasharray:none;stroke-opacity:1\"></circle>\n", self.color).unwrap();
 				write!(counter_file, "\t</svg>\n").unwrap();
 			}
+			TurretType::SearchlightTurret => {
+				generate_svg_start_element(counter_file, 1, 0.00, 0.00, 60.0, 60.0, "Searchlight Turret", "white");
+				// TODO: hard-coded "black" color for now?
+				write!(counter_file, "\t\t<circle cx=\"30.00\" cy=\"30.00\" r=\"23.00\" style=\"display:inline;fill:none;fill-opacity:1;stroke:{0};stroke-width:0.2;stroke-dasharray:none;stroke-opacity:1\"></circle>\n", "black").unwrap();
+				write!(counter_file, "\t\t<circle cx=\"30.00\" cy=\"30.00\" r=\"25.00\" style=\"display:inline;fill:none;fill-opacity:1;stroke:{0};stroke-width:0.2;stroke-dasharray:none;stroke-opacity:1\"></circle>\n", "black").unwrap();
+				write!(counter_file, "\t</svg>\n").unwrap();
+			}			
 			TurretType::NonTurreted => {
 			}
 		}
@@ -92,6 +101,8 @@ pub fn string_to_turret_type(mount: &String) -> TurretType {
 		result = TurretType::NonTurreted;
 	} else if mount.contains("T") {
 		result = TurretType::FastTurret;
+	} else if mount.contains("SL") {
+		result = TurretType::SearchlightTurret;
 	}
 
 	return result;

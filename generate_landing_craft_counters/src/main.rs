@@ -19,6 +19,8 @@ use common_functions::overrides::*;
 use common_functions::text_field::*;
 use common_functions::transport::*;
 use common_functions::utils::*;
+
+pub const BOG_FONT_SIZE: f64 = 8.0;
 //
 // Sanitized and parsed vehicle-specific record fields.
 //
@@ -31,6 +33,9 @@ struct Record {
 	armor: ArmorValues,
 	movement_values: VehicleMovementValues,
 	transport_values: TransportValues,
+	// TODO NOT YET dp: String,
+	bog: String,
+	ramp: bool,
 }
 
 fn generate_armament_elements(counter_file: &std::fs::File, record: &Record) {
@@ -38,7 +43,7 @@ fn generate_armament_elements(counter_file: &std::fs::File, record: &Record) {
 	let mut pp_generated = false;
 
 	generate_debug_gun_line_svg(counter_file);
-	
+
 	if !record.common.overrides.ma.ignore {
 		y_position = generate_gun_caliber_line(&counter_file, &record.common);
 
@@ -55,7 +60,7 @@ fn generate_armament_elements(counter_file: &std::fs::File, record: &Record) {
 		}
 
 		if !record.common.ma.raw_caliber.is_empty() && record.transport_values.pp.is_set && record.transport_values.pp.alternate_location.is_empty() {
-			y_position -= generate_pp_number_element(&counter_file, &record.transport_values.pp, GUN_COLUMN_X_POSITION, y_position, &"start".to_string());
+			y_position -= lc_generate_pp_svg_elements(&counter_file, &record.transport_values.pp, GUN_COLUMN_X_POSITION, y_position, &"start".to_string(), record.ramp);
 			pp_generated = true;
 		}
 
@@ -71,15 +76,13 @@ fn generate_armament_elements(counter_file: &std::fs::File, record: &Record) {
 		}		
 	}
 
-	if MOD_LOCATION_ABOVE_MGS == record.transport_values.pp.alternate_location {
-		generate_pp_number_element(&counter_file, &record.transport_values.pp, TOWING_PP_X_POSITION, TOWING_Y_POSITION, &"end".to_string());	
-	} else if MOD_LOCATION_MGS == record.transport_values.pp.alternate_location {
-		generate_pp_number_element(&counter_file, &record.transport_values.pp, MGS_LINE_X_POSITION, MGS_LINE_Y_POSITION, &"end".to_string());		
+	if !record.transport_values.pp.alternate_location.is_empty() {
+		lc_generate_pp_svg_elements(&counter_file, &record.transport_values.pp, TOWING_PP_X_POSITION, TOWING_Y_POSITION, &"end".to_string(), record.ramp);
 	} else if pp_generated {
 		generate_towing_number_element(&counter_file, &record.transport_values.towing, TOWING_X_POSITION, TOWING_Y_POSITION, &"end".to_string());
 	} else { // for unarmored vehicles
 		y_position = GUN_COLUMN_Y_POSITION;
-		y_position -= generate_pp_number_element(&counter_file, &record.transport_values.pp, GUN_COLUMN_X_POSITION, y_position, &"start".to_string());
+		y_position -= lc_generate_pp_svg_elements(&counter_file, &record.transport_values.pp, GUN_COLUMN_X_POSITION, y_position, &"start".to_string(), record.ramp);
 		generate_towing_number_element(&counter_file, &record.transport_values.towing, GUN_COLUMN_X_POSITION, y_position, &"start".to_string());
 	}
 }
@@ -106,7 +109,11 @@ fn generate_counter_front(mut counter_file: &std::fs::File, path: &String, recor
 	record.movement_values.generate_svg_elements(&counter_file, &record.common.colors);	
 
 	if record.transport_values.manhandling_number.is_set {
-		generate_motorcycle_manhandling_number_element(&counter_file, &record.transport_values.manhandling_number, &record.common.colors.text);
+		generate_boat_manhandling_number_element(&counter_file, &record.transport_values.manhandling_number, &record.common.colors.text);
+	}
+	
+	if !record.bog.is_empty() {
+		write!(counter_file, "\t<text x=\"30\" y=\"10\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{0:.2}px;font-weight:{1};font-family:{2};fill:{3};fill-opacity:1;stroke:none;stroke-width:0.2\">{4}</tspan></text> <!-- Bog -->\n", BOG_FONT_SIZE, ARM_FONT_WEIGHT, FONT_MAIN, record.common.colors.text, record.bog).unwrap();
 	}
 }
 
@@ -208,7 +215,7 @@ TODO: CREATE_WRECKS NOT YET? */
 fn generate_counter(record: &mut Record, note_number: &String) {
 	print!("Generating '{0}.svg' ({1}) ...", record.common.piece_front, note_number);
 
-	let path = construct_path(&record.common.nationality, "veh", &record.common.destination);
+	let path = &record.common.destination.to_string();
 	//
 	// Create the front counter file.
 	//
@@ -216,11 +223,11 @@ fn generate_counter(record: &mut Record, note_number: &String) {
 		Err(why) => panic!("couldn't create file: {0} {1}", record.common.piece_front, why),
 		Ok(counter_file) => counter_file,
 	};
-
-	generate_large_counter_header_svg_elements("vasl_vehicle_counters", &counter_file, &note_number, &record.common.name, &record.common.comments, &record.common.version);
+	
+	generate_large_counter_header_svg_elements("vasl_landing_craft_and_boats_counters", &counter_file, &note_number, &record.common.name, &record.common.comments, &record.common.version);
 	generate_counter_front(&counter_file, &path, record);
 	generate_footer_svg(&counter_file);
-
+	
 	drop(counter_file);
 
 /* TODO: NOT YET?
@@ -246,9 +253,7 @@ TODO: NOT YET? */
 fn generate_counters(record: &mut Record) {
 	let note_number: String = record.common.note.clone();
 	
-	if record.common.overrides.copy {
-		let _ = copy_counter("veh", &record.common.nationality, &record.common.piece_front, &note_number, &record.common.destination);
-	} else if !record.common.nationality.is_empty() {
+	if !record.common.nationality.is_empty() {
 		generate_counter(record, &note_number);
 	} else {
 		println!("Missing nationality for piece '{0}'", record.common.piece_front);
@@ -267,8 +272,6 @@ fn generate_counters(record: &mut Record) {
 struct SpreadsheetRecord {
 	count: String,
 	name: String,
-	radioless: String,
-	weight: String,
 	bpv: String,
 	rf: String,
 	dates: String,
@@ -276,22 +279,18 @@ struct SpreadsheetRecord {
 	af: String,
 	ta: String,
 	ot: String,
+	dp: String,
 	cs: String,
 	mp: String,
-	gp: String,
+	bog: String,
 	gt: String,
 	ma: String,
 	rof_ife: String,
 	breakdown: String,
-	intensive_fire: String,
 	bmg: String,
-	cmg: String,
 	aamg: String,
-	sa: String,
-	ammunition: String,
-	smoke_depletion: String,
-	smoke_discharger: String,
-	transport: String,
+	ramp: String,
+	pp: String,
 	notes: String,
 	version: String,
 	piece: String,
@@ -310,28 +309,36 @@ impl SpreadsheetRecord {
 		result.common.overrides.sanitize(&self.overrides);
 		result.common.initialize(&nationality, &self.notes, &self.name, &self.ma, &"".to_string(), &self.rof_ife, &self.breakdown, &self.version, &self.piece, &self.svg_image_transform, &self.comments);
 		result.common.turret = sanitize_mount(&self.gt, &result.common.overrides, &result.common.colors);
-		result.common.ma.special_ammo.sanitize(&self.ammunition, &result.common.overrides.special_ammo, RANGE_FONTS, &result.common.colors);
-
-		if !self.sa.is_empty() || self.overrides.contains("NOVR_SA") {
-			result.sa.is_secondary = true;
-			result.sa.sanitize(&self.sa, &"".to_string(), &"".to_string(), &result.common.overrides, &result.common.colors);
-		}
-		
-		result.sa_malfunction.sanitize(&"".to_string(), &result.common.overrides.sa, &result.common.colors); // SA breakdown MUST be specified via Override.
 		
 		result.armor.initialize(&self.af, &self.ta, &self.size, &result.common.overrides, &result.common.colors);
-		result.movement_values.sanitize(&self.name, &self.mp, &self.gp, &result.common.overrides, !self.ot.is_empty(), &result.common.colors);
-		result.transport_values.sanitize(&self.transport, &result.common.overrides, &result.common.colors);
+		result.movement_values.sanitize(&self.name, &self.mp, &"".to_string(), &result.common.overrides, !self.ot.is_empty(), &result.common.colors);
+		result.transport_values.lc_sanitize(&self.pp, !self.ramp.is_empty(), &result.common.overrides, &result.common.colors);
 
-		result.mgs.sanitize(&self.bmg, &self.cmg, &self.aamg, &result.common.overrides, &result.common.colors);
+		result.mgs.sanitize(&self.bmg, &"".to_string(), &self.aamg, &result.common.overrides, &result.common.colors);
+		//
+		// Landing craft specific handling.
+		//
+		result.bog = self.bog.clone();
 		
+		if self.ramp.contains(RAMP_DOT) {
+			result.ramp = true;
+		}
+		//
+		// Boat specific handling.
+		//
+		result.transport_values.manhandling_number.text = extract_from(&self.overrides, NOVR_MANHANDLING);
+		
+		if !result.transport_values.manhandling_number.text.is_empty() {
+			result.transport_values.manhandling_number.is_set = true;
+		}
+
 		return result;
 	}
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
 	let mut rdr = csv::Reader::from_reader(io::stdin());
-	let destination = get_destination_arg();
+	let destination = format!("{0}sh/", get_destination_arg()); // get_destination() ensures a trailing '/'
 
 	for result in rdr.deserialize() {
 		let mut spreadsheet_record: SpreadsheetRecord = result?;

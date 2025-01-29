@@ -22,6 +22,7 @@ pub const ARM_X_POSITION: f64 = 40.0;
 pub const FAR_Y_POSITION: f64 = 15.0;
 pub const SAR_Y_POSITION: f64 = FAR_Y_POSITION + ARM_SVG_HEIGHT - 1.0;
 pub const RAR_Y_POSITION: f64 = SAR_Y_POSITION + ARM_SVG_HEIGHT - 1.0;
+pub const XAR_Y_POSITION: f64 = RAR_Y_POSITION + ARM_SVG_HEIGHT - 1.0; // -4 size red dot
 
 pub const ARMOR_VALUE_FONT_SIZE: f64 =				8.0;
 pub const ARMOR_VALUE_ALTERNATE_FONT_SIZE: f64 =	7.0;
@@ -58,15 +59,20 @@ pub struct ArmorValue {
 	pub modifier_color: String,
 	pub small_target_circle_color: String,
 	pub small_target_circle: bool,
-	pub large_target_circle: bool,	// Red dot for -3 sized targets (cough) Maus (cough).
-	pub note: Note,					// Armor note asterisk.
+	pub large_target_circle: bool,			// Red dot for -3 sized targets (cough) Maus (cough) and -4 sized targets - LCT(4).
+	pub note: Note,							// Armor note asterisk.
 	pub y_position: f64,
 	pub comment: String,
 }
 
 impl ArmorValue {
-	pub fn initialize(&mut self, y_position: f64, comment: String, colors: &Colors) {
-		self.y_position = y_position;
+	pub fn initialize(&mut self, y_position: f64, comment: String, shift_down: bool, colors: &Colors) {
+		if shift_down {
+			self.y_position = y_position + ARM_SVG_HEIGHT - 1.0;
+		} else {
+			self.y_position = y_position;
+		}
+		
 		self.comment = comment;
 		
 		self.fill_color = colors.normal_target.to_string();		
@@ -92,7 +98,7 @@ impl ArmorValue {
 		let armor_modifier: String = self.modifier_color.to_string();
 	
 		generate_svg_start_element(counter_file, 1, ARM_X_POSITION, self.y_position, ARM_SVG_WIDTH, ARM_SVG_HEIGHT, &self.comment, "white");
-		
+	
 		if self.small_target_circle {
 			write!(counter_file, "\t\t<circle cx=\"66%\" cy=\"50%\" r=\"{0:.2}\" style=\"display:inline;fill:{1};fill-opacity:1;stroke:none;stroke-width:1.00px;stroke-dasharray:none;stroke-opacity:1\"></circle>\n", ARM_CIRCLE_RADIUS, self.small_target_circle_color).unwrap();
 			armor_fill_color = BLACK.to_string(); // Force black text when we have a small target cicle to display on.
@@ -101,26 +107,7 @@ impl ArmorValue {
 		let mut font_size = ARMOR_VALUE_FONT_SIZE;
 	
 		if self.value.contains(&STAR.to_string()) {
-			let mut prefix_note: String = Default::default();
-			let mut postfix_note: String = Default::default();
-			
-			font_size = ARMOR_VALUE_ALTERNATE_FONT_SIZE;
-	
-			if NoteAction::Prefix == self.note.action {
-				prefix_note = self.note.text.to_string();
-				
-				if prefix_note.contains(&SIX_LOBED_ASTERISK_UC.to_string()) {
-					font_size = ARMOR_VALUE_NOTE_FONT_SIZE;
-				}
-			} else if NoteAction::Postfix == self.note.action {
-				postfix_note = self.note.text.to_string();
-				
-				if prefix_note.contains(&SIX_LOBED_ASTERISK_UC.to_string()) {
-					font_size = ARMOR_VALUE_NOTE_FONT_SIZE;
-				}
-			}
-	
-			write!(counter_file, "\t\t<text x=\"66%\" y=\"70%\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{0}px;font-weight:{1};font-family:{2};fill:{3};fill-opacity:1;stroke:{4};stroke-width:0.33\">{5}{6}{7}</tspan></text>\n", font_size, ARM_FONT_WEIGHT, FONT_MAIN, armor_fill_color, armor_stroke_color, prefix_note, self.value, postfix_note).unwrap();
+			write!(counter_file, "\t\t<text x=\"66%\" y=\"70%\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{0}px;font-weight:{1};font-family:{2};fill:{3};fill-opacity:1;stroke:{4};stroke-width:0.33\">{5}</tspan></text>\n", font_size, ARM_FONT_WEIGHT, FONT_MAIN, armor_fill_color, armor_stroke_color, self.value).unwrap();
 		} else {
 			let mut y_pos: &str = "75";
 			
@@ -152,7 +139,7 @@ impl ArmorValue {
 			}
 		}
 	
-		if !self.value.contains(&STAR.to_string()) && (NoteAction::Prefix == self.note.action || NoteAction::Postfix == self.note.action) {
+		if NoteAction::Prefix == self.note.action || NoteAction::Postfix == self.note.action {
 			let note_y_position = ARM_SVG_HEIGHT / 2.0;
 				
 			if self.note.text.contains(&SIX_LOBED_ASTERISK_UC.to_string()) {
@@ -160,9 +147,9 @@ impl ArmorValue {
 			}
 			
 			if ArmorModifier::None == self.modifier {
-				write!(counter_file, "\t\t<text x=\"40%\" y=\"{0:.2}\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};fill:black;fill-opacity:1;stroke-width:0.2\">{3}</tspan></text> <!-- {4} note -->\n", note_y_position, font_size, ARM_FONT_WEIGHT, self.note.text, self.comment).unwrap();
+				write!(counter_file, "\t\t<text x=\"40%\" y=\"{0:.2}\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};fill:black;fill-opacity:1;stroke-width:0.2\">{3}</tspan></text> <!-- note -->\n", note_y_position, font_size, ARM_FONT_WEIGHT, self.note.text).unwrap();
 			} else {
-				write!(counter_file, "\t\t<text x=\"20%\" y=\"{0:.2}\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};fill:black;fill-opacity:1;stroke-width:0.2\">{3}</tspan></text> <!-- {4} note -->\n", note_y_position, font_size, ARM_FONT_WEIGHT, self.note.text, self.comment).unwrap();
+				write!(counter_file, "\t\t<text x=\"20%\" y=\"{0:.2}\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};fill:black;fill-opacity:1;stroke-width:0.2\">{3}</tspan></text> <!-- note -->\n", note_y_position, font_size, ARM_FONT_WEIGHT, self.note.text).unwrap();
 			}
 		}
 
@@ -176,6 +163,7 @@ pub struct ArmorValues {
 	pub front: ArmorValue,
 	pub side: ArmorValue,
 	pub rear: ArmorValue,
+	pub extra: ArmorValue,	// For -4 target size red dot
 	pub count: usize,
 	pub target_size: i64,
 }
@@ -185,9 +173,10 @@ impl ArmorValues {
 		let temp: String = af.to_string();
 		let armor_values: Vec<String>;
 
-		self.front.initialize(FAR_Y_POSITION, "Front Armor".to_string(), colors);
-		self.side.initialize(SAR_Y_POSITION, "Side/Rear Armor".to_string(), colors);
-		self.rear.initialize(RAR_Y_POSITION, "Rear Armor".to_string(), colors);
+		self.front.initialize(FAR_Y_POSITION, "Front Armor".to_string(), overrides.shift_armor_down, colors);
+		self.side.initialize(SAR_Y_POSITION, "Side/Rear Armor".to_string(), overrides.shift_armor_down, colors);
+		self.rear.initialize(RAR_Y_POSITION, "Rear Armor".to_string(), overrides.shift_armor_down, colors);
+		self.extra.initialize(XAR_Y_POSITION, "Extra Armor".to_string(), overrides.shift_armor_down, colors);
 			
 		armor_values = extract_armor_values(&temp.to_string());
 
@@ -277,18 +266,35 @@ impl ArmorValues {
 		if !overrides.target_size.is_empty() {
 			self.target_size = overrides.target_size.parse::<i64>().unwrap_or(0);
 		} else {
-			self.target_size = strip_all_occurances(&size, DAGGER).parse::<i64>().unwrap_or(0);
+			self.target_size = strip_dagger_and_any_superscript_from_end(&size).parse::<i64>().unwrap_or(0);
 		}
 
 		match self.target_size {
+			-4 => {
+				self.front.fill_color = colors.large_target.to_string();
+				self.side.fill_color = colors.large_target.to_string();
+				self.rear.fill_color = colors.large_target.to_string();
+				self.rear.large_target_circle = true;
+				self.rear.modifier = ArmorModifier::None;
+				self.extra.fill_color = colors.large_target.to_string();
+				self.extra.large_target_circle = true;
+				self.extra.modifier = ArmorModifier::None;
+				self.front.modifier_color = colors.large_target.to_string();
+				self.side.modifier_color = colors.large_target.to_string();
+				self.rear.modifier_color = colors.large_target.to_string();
+				self.extra.modifier_color = colors.large_target.to_string();
+				self.count = 4;
+			}			
 			-3 => {
 				self.front.fill_color = colors.large_target.to_string();
 				self.side.fill_color = colors.large_target.to_string();
 				self.rear.fill_color = colors.large_target.to_string();
 				self.rear.large_target_circle = true;
+				self.rear.modifier = ArmorModifier::None;
 				self.front.modifier_color = colors.large_target.to_string();
 				self.side.modifier_color = colors.large_target.to_string();
 				self.rear.modifier_color = colors.large_target.to_string();
+				self.count = 3;
 			}
 			-2 => {
 				self.front.fill_color = colors.large_target.to_string();
@@ -359,9 +365,13 @@ impl ArmorValues {
 	
 		self.side.generate_svg_elements(counter_file);
 	
-		if 3 == self.count {
+		if 3 <= self.count {
 			self.rear.generate_svg_elements(counter_file);
 		}
+		
+		if 4 == self.count {
+			self.extra.generate_svg_elements(counter_file);
+		}		
 	}
 	
 	fn note_helper(&mut self, tag: &str) {

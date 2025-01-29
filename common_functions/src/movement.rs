@@ -7,6 +7,7 @@ use regex::Regex;
 // Local defines.
 //
 use crate::colors::*;
+use crate::defines::*;
 use crate::overrides::*;
 use crate::text_field::*;
 use crate::utils::*;
@@ -76,6 +77,7 @@ pub enum MovementType {
 	Truck,
 	Skis,
 	Motorcycle,
+	Nimbus,
 	#[default]
 	None,
 }
@@ -89,6 +91,7 @@ impl fmt::Display for MovementType {
             MovementType::Truck => write!(f, "Truck"),
 			MovementType::Skis => write!(f, "Skis"),
 			MovementType::Motorcycle => write!(f, "Motorcycle"),
+			MovementType::Nimbus => write!(f, "Nimbus"),
 			MovementType::None => write!(f, "None"),
         }
     }
@@ -145,8 +148,11 @@ impl VehicleMovementValues {
 			"AS" => {
 				self.mt = MovementType::Skis;
 			}
-			"TDmc" => {
+			"mc" => {
 				self.mt = MovementType::Motorcycle;
+			}
+			"TDmc" => {
+				self.mt = MovementType::Nimbus;
 			}
 			"AAh-d" | _ => {
 				self.mt = MovementType::None;
@@ -256,7 +262,7 @@ impl VehicleMovementValues {
 				MovementType::Skis => {
 					write!(counter_file, "\t\t<rect x=\"7.00\" y=\"50%\" ry=\"0.00\" width=\"19.00\" height=\"3.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", self.mt_color).unwrap();
 				}
-				MovementType::Motorcycle | MovementType::None => {
+				MovementType::Motorcycle | MovementType::Nimbus | MovementType::None => {
 				}
 			}
 			//
@@ -297,12 +303,17 @@ impl VehicleMovementValues {
 			//
 			// Handle Motorcycle size element (Nimbus).
 			//
-			if MovementType::Motorcycle == self.mt {
-				generate_svg_start_element(counter_file, 1, 3.0, 12.0, 10.0, 10.0, "Motorcycle size", &"pink".to_string());
+			if MovementType::Nimbus == self.mt {
+				generate_svg_start_element(counter_file, 1, 3.0, 12.0, 10.0, 10.0, "Nimbus Motorcycle size", &"pink".to_string());
 	
 				write!(counter_file, "\t\t\t<text x=\"0.00\" y=\"70%\" dominant-baseline=\"auto\" text-anchor=\"start\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">-1</text>\n", MOTORCYCLE_FONT_SIZE, FONT_MAIN, colors.text).unwrap();
 				write!(counter_file, "\t</svg>\n").unwrap();
-			}
+			} else if MovementType::Motorcycle == self.mt {
+				generate_svg_start_element(counter_file, 1, MGS_LINE_X_POSITION, MGS_LINE_2_Y_POSITION - MOTORCYCLE_FONT_SIZE, 36.0, MOTORCYCLE_FONT_SIZE, "Motorcycle size", &"pink".to_string());
+	
+				write!(counter_file, "\t\t\t<text x=\"100%\" y=\"70%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">-1</text>\n", MOTORCYCLE_FONT_SIZE, FONT_MAIN, colors.text).unwrap();
+				write!(counter_file, "\t</svg>\n").unwrap();
+			}			
 		} else {
 			let font_size = self.points.fonts.size() - 3.0;
 			
@@ -417,6 +428,11 @@ impl OrdnanceMovementValues {
 			self.unhooking_penalty = false;
 		}
 	}
+	
+	pub fn set_font_and_color(&mut self, colors: &Colors) {
+		self.manhandling_number.fonts.initialize(MH_NUMBER_FONTS);
+		self.color = colors.manhandling_fill.to_string();
+	}
 }
 
 #[derive(PartialEq)]
@@ -430,7 +446,6 @@ pub fn generate_manhandling_number(mut counter_file: &std::fs::File, movement: &
 	let manhandling_number_color: String = movement.manhandling_number.color.to_string();
 
 	if 1 != movement.target_size && !movement.unhooking_penalty {
-		write!(counter_file, "\t<!-- Manhandling -->\n").unwrap();
 		write!(counter_file, "\t<text x=\"57.00\" y=\"20.40\" dominant-baseline=\"auto\" text-anchor=\"end\"><tspan style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">M</tspan><tspan style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{3};fill-opacity:1\">{4}</tspan></text>\n", movement.manhandling_number.fonts.size(), FONT_MAIN, movement.color, manhandling_number_color, movement.manhandling_number.text).unwrap();
 	} else {
 		let mut font_size = movement.manhandling_number.fonts.size();
@@ -467,9 +482,29 @@ pub fn generate_manhandling_number(mut counter_file: &std::fs::File, movement: &
 	}
 }
 
-pub fn generate_nimbus_manhandling_number_element(mut counter_file: &std::fs::File, mh: &TextField, m_color: &String) {
-	write!(counter_file, "\t\t<!-- Manhandling -->\n").unwrap();
-	write!(counter_file, "\t\t<text x=\"57.00\" y=\"24.00\" dominant-baseline=\"auto\" text-anchor=\"end\"><tspan style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">M</tspan><tspan style=\"font-size:{0}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{3};fill-opacity:1\">{4}</tspan></text>\n", mh.fonts.size(), FONT_MAIN, m_color, mh.color, mh.text).unwrap();	
+pub fn generate_motorcycle_manhandling_number_element(mut counter_file: &std::fs::File, mh: &TextField, m_color: &String) {
+	let mut x_pos: f64 = 57.0;
+	let mut y_pos: f64 = 24.0;
+	let mut anchor = "end".to_string();
+	
+	if MOD_LOCATION_GS == mh.alternate_location {
+		x_pos = GUN_COLUMN_X_POSITION;
+		y_pos = GUN_COLUMN_Y_POSITION;
+		anchor = "start".to_string();
+	}
+	
+	write!(counter_file, "\t<!-- Motorcycle Manhandling -->\n").unwrap();
+	write!(counter_file, "\t<text x=\"{0:.2}\" y=\"{1:.2}\" dominant-baseline=\"auto\" text-anchor=\"{anchor}\"><tspan style=\"font-size:{2:.2}px;{FONT_WEIGHT_BOLD};font-family:{3};fill:{4};fill-opacity:1\">M</tspan><tspan style=\"font-size:{2}px;{FONT_WEIGHT_BOLD};font-family:{3};fill:{5};fill-opacity:1\">{6}</tspan></text>\n", x_pos, y_pos, mh.fonts.size(), FONT_MAIN, m_color, mh.color, mh.text).unwrap();	
+}
+
+pub fn generate_boat_manhandling_number_element(mut counter_file: &std::fs::File, mh: &TextField, m_color: &String) {
+	let mut fonts: FontsObj = Default::default();
+	
+	fonts.initialize(MH_NUMBER_FONTS);
+	// self.manhandling_number.fonts.initialize(MH_NUMBER_FONTS);
+		
+	write!(counter_file, "\t<!-- Nimbus Manhandling -->\n").unwrap();
+	write!(counter_file, "\t<text x=\"3.00\" y=\"48.00\" dominant-baseline=\"auto\" text-anchor=\"start\"><tspan style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">M</tspan><tspan style=\"font-size:{0}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{3};fill-opacity:1\">{4}</tspan></text>\n", fonts.size(), FONT_MAIN, m_color, m_color, mh.text).unwrap();	
 }
 
 fn extract_movement_points(original: &String) -> std::string::String {
