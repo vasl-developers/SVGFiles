@@ -1,0 +1,10 @@
+count,name,gun_type,caliber,rof_ife,breakdown,range,manhandling,target_size,dates,special,bpv,rf,notes,version,piece,r_x,overrides,limbered,svg_image_transform,reverse,comments
+<b>#</b>,<b>Name</b>,<b>Type</b>,<b>CSize</b>,<b>ROF (IFE)</b>,<b>B#</b>,<b>Range</b>,<b>M#</b>,<b>TSize</b>,<b>Dates</b>,<b>Special</b>,<b>BPV</b>,<b>RF</b>,<b>Notes</b>,,,,ignore,,,,
+1,81mm Granatkastare m/29,MTR,"<span style=""text-decoration:overline"">81</span>*",3,,3-71,11,+1,2-3/40,"NT, QSU, s8",28,1.2,1,1.0,svMTR81s,,range=$$,,,,
+2,37mm Pansarvarnskanon m/38,AT,"<span style=""text-decoration:underline"">37</span>L",3,,,12,+1,2-3/40,"NT, QSU",26,1.0,2,1.0,svAT37L,,,,,,
+2,8.4cm Feltkanon m/1887,ART,"<span style=""text-decoration:overline"">84</span>*",,,,8,+1,4/40,"NT, QSU, h-d, Acq NA, No Gunshield",23,1.6,3,1.0,svART84s,,ma=[*]$$,,,,
+0,Generic AA,AA,,,,,,,,,,,g1,1.0,svAAgen,1/,gt=AA|mount=T,no_fire,,,
+0,Generic ART,ART,,,,,,,,,,,g2,1.0,svARTgen,1/,,no_fire,,,
+0,Generic AT,AT,,,,,,,,,,,g3,1.0,svATgen,1/,,no_fire,,,
+0,Generic INF,INF,,,,,,,,,,,g4,1.0,svINFgen,1/,,no_fire,,,
+0,Generic MTR,MTR,,,,,,,,,,,g5,1.0,svMTRgen,1/,,no_fire,,,
