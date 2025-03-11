@@ -56,35 +56,35 @@ Spreadsheet updating/editing:
 		
 	SUBSTITUTION - An override can access the original field's value (stripped of any daggers) for modification.
 	
-		"$$"		Inserts original field's value (stripping out any dagger/notes), e.g., if the main armament field contained "128L†", then "ma=<*>$$" would result in the main armament being overriden to "*128L" (without the dagger/note and with a 6-lobed asterisk in front).
+		"$$" Inserts original field's value (stripping out any dagger/notes), e.g., if the main armament field contained "128L†", then "ma=<*>$$" would result in the main armament being overriden to "*128L" (without the dagger/note and with a 6-lobed asterisk in front).
 		
-	"announce"		Print the contents of the "count" column of the spreadsheet as text.
+	"announce"			Print the contents of the "count" column of the spreadsheet as text.
 
-	"far=<XX>"		Front armor. e.g., "far=8" changes the front armor value to "8".
+	"far=<XX>"			Front armor. e.g., "far=8" changes the front armor value to "8".
 	
-	"sar=<XX>"		Side armor. e.g., "sar=4" changes the side armor value to "4".
+	"sar=<XX>"			Side armor. e.g., "sar=4" changes the side armor value to "4".
 	
-	"rar=<XX>"		Rear armor. e.g., "rar=2" changes the rear armor value to "2".
+	"rar=<XX>"			Rear armor. e.g., "rar=2" changes the rear armor value to "2".
 	
-	"bkg=<XX>"		Replace the normal background color. Identifiers correspond to the 2-letter nationality abbreviations (e.g., "ge" for German, "br" for British, etc.).
+	"bkg=<XX>"			Replace the normal background color. Identifiers correspond to the 2-letter nationality abbreviations (e.g., "ge" for German, "br" for British, etc.).
 	
-	"cap=<XX>"		Captured. Inset the specified background color within the original nationality color. Identifiers correspond to the 2-letter nationality abbreviations (e.g., "ge" for German, "br" for British, etc.).
+	"cap=<XX>"			Captured. Inset the specified background color within the original nationality color. Identifiers correspond to the 2-letter nationality abbreviations (e.g., "ge" for German, "br" for British, etc.).
 
-	"copy"			Copy the counter from the cached folder (see Japanese Ordnance note #19).
+	"copy"				Copy the counter from the cached folder (see Japanese Ordnance note #19).
 	
-	"fixed_bmg"		Fixed BMG. Places a white dot behind the BMG.
+	"fixed_bmg"			Fixed BMG. Places a white dot behind the BMG.
 	
-	"gp=<X>"		Set ground pressure to High ('H'), Normal ('N'), or Low ('L').
+	"gp=<X>"			Set ground pressure to High ('H'), Normal ('N'), or Low ('L').
 	
-	"gt=<XX>"		Sets the gun type to "AA", "ART", "INF", "MTR", or "RCL".
+	"gt=<XX>"			Sets the gun type to "AA", "ART", "INF", "MTR", or "RCL".
 	
-	"ife=<XX>"		Sets the IFE value, parenthesis are not required.
+	"ife=<XX>"			Sets the IFE value, parenthesis are not required.
 	
-	&ife=<XX>		IFE value.
+	&ife=<XX>			IFE value.
 		
-	"ignore"		Ignore entry.
+	"ignore"			Ignore entry.
 	
-	"ma=<XX>"		Main armament.
+	"ma=<XX>"			Main armament.
 	
 		ma= - e.g., set main armament to nothing so it will not be displayed.
 		
@@ -98,17 +98,17 @@ Spreadsheet updating/editing:
 		
 		ma=[_*][*]37LL - If "[_*]" is needed it must be first.
 	
-	"ma_movt"		Main armament moving target penalty, (e.g., British Vehicle note #55).
+	"ma_movt"			Main armament moving target penalty, (e.g., British Vehicle note #55).
 	
-	"man=<XX>"		Manhandling. Use HTML bold around the value to activate unhooking penalty circle, e.g., "<b>-4</b>".
+	"man=<XX>"			Manhandling. Use HTML bold around the value to activate unhooking penalty circle, e.g., "<b>-4</b>".
 	
-	"mb=<XX>"		Main armament breakdown.
+	"mb=<XX>"			Main armament breakdown.
 
 		brk=11 - Change displayed breakdown number to "B11".
 		
 		brk=<i>10</i> - Display low ammo breakdown 10, e.g., "B(10)".
 	
-	"mgs=<B/C/A>"	Override BMG/CMG/AAMG values.
+	"mgs=<B/C/A>"		Override BMG/CMG/AAMG values.
 
 		mgs=-/-/2
 		
@@ -116,46 +116,47 @@ Spreadsheet updating/editing:
 		
 		mgs=2/4<sup>R2</sup>/2 - 2 FP rear MG specified by "<sup>R2</sup>".
 		
-	"mount=<XX>"	Mount/Turret type, e.g., Fast Turret "T", Slow Turret "ST", Restricted Slow Turret "RST", One Man Turret "1MT", Non-turreted "NT".
+	"mount=<XX>"		Mount/Turret type, e.g., Fast Turret "T", Slow Turret "ST", Restricted Slow Turret "RST", One Man Turret "1MT", Non-turreted "NT".
 		
-	"mp=<XX>"		Override movement points. Use HTML bold around the value to indicate red MP, e.g., "<b>11</b>".
+	"mp=<XX>"			Override movement points. Use HTML bold around the value to indicate red MP, e.g., "<b>11</b>".
 	
-	"mt=<XX>"		Override vehicle movement type graphic normally extracted from "name" field. Tracked "MT", Half-tracked "ht", Armored Car "AC", Truck "tr", Aerosan "AS".
+	"mt=<XX>"			Override vehicle movement type graphic normally extracted from "name" field. Tracked "MT", Half-tracked "ht", Armored Car "AC", Truck "tr", Aerosan "AS".
 	
-	"multi_hits"	Puts white dot behind ROF indicating that the main armament is eligible for multiple hits.
+	"multi_hits"		Puts white dot behind ROF indicating that the main armament is eligible for multiple hits.
 	
-	"name=<XX>"		Replace name on counter and in SVG documentation. Implemented but not enabled in default build.
+	"name=<XX>"			Replace name on counter and in SVG documentation. Implemented but not enabled in default build.
 	
-	"nat=<XX>"		For vehicles, specifies the counter's "nationality." Identifiers correspond to the 2-letter nationality abbreviations (e.g., "ge" for German, "br" for British, etc.). Also for Axis Minors which have unique prefixes.
+	"nat=<XX>"			For vehicles, specifies the counter's "nationality." Identifiers correspond to the 2-letter nationality abbreviations (e.g., "ge" for German, "br" for British, etc.). Also for Axis Minors which have unique prefixes.
 
 	"nat2=<XXX>"		For Hungarians and Korea Forgotten War UN forces (where <XXX> be a list gemhack TBD) where different nationality counters are generated from a single database line.
 	
-	"qual=<XX>"		Adds qualifier to Chapter H note number when displayed, e.g., "qual=b" for vehicle note "13" will display "13b".
+	"qual=<XX>"			Adds qualifier to Chapter H note number when displayed, e.g., "qual=b" for vehicle note "13" will display "13b".
 	
-	"pp=<XX>"		PP number, e.g., "pp=9PP<*>". gemhack eliminate need to specify "PP"?
+	"pp=<XX>"			PP number, e.g., "pp=9PP<*>". gemhack eliminate need to specify "PP"?
 	
-	"range=<XXX>"	Show range value(s),
+	"range=<XXX>"		Show range value(s),
 	
 		"range=$$" - For ordnance to display the range data from the table.
 	
 		"range=[50]" - For vehicles to display the specified range data.
 	
-	"rof=<X>"		Display either '1', '2', or '3' in the ROF box, use "rof=" to eliminate ROF.
+	"rof=<X>"			Display either '1', '2', or '3' in the ROF box, use "rof=" to eliminate ROF.
 	
-	"sa=<XXX>"		Secondary armament, as per Main armament above.
+	"sa=<XXX>"			Secondary armament, as per Main armament above.
 	
-	"movt_sa"		Secondary armament moving target penalty.
+	"movt_sa"			Secondary armament moving target penalty.
 	
-	"sb=<XXX>"		Secondary armament breakdown, as per Main armament breakdown above.
-	
+	"sb=<XXX>"			Secondary armament breakdown, as per Main armament breakdown above.
+
 	"shift_armor_down"	Shift the armor values down. Used by the shared searchlight trailer (SL) counter to allow placement of manhandling number.
 	
-	"size=<XX>"		Target size ("-3", "-2", "-1", "0", "1", "2").
+	"size=<XX>"			Target size ("-3", "-2", "-1", "0", "1", "2").
+
 	"ta=<XXX>"			Replace the turret armor values using the same format as the "ta" column (e.g., "ta=-F/+SR" - inferior front armor, superior side/rear armor).
 	
-	"ammo=<XX>"		Special ammunition values, e.g., German Ordnance note #6.
+	"ammo=<XX>"			Special ammunition values, e.g., German Ordnance note #6.
 	
-	"tow="			Towing (T#) number, e.g., Russian Vehicle note #46.1.		
+	"tow="				Towing (T#) number, e.g., Russian Vehicle note #46.1.		
 
 In general, you'll find multiple examples of each of these overrides in the spreadsheets, or find an existing counter in Chapter H that has the feature you are looking for and see which (if any) overrides were used to produce the current counter.
 

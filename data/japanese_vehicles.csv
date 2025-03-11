@@ -27,7 +27,7 @@ count,name,radioless,weight,bpv,rf,dates,size,af,ta,ot,cs,mp,gp,gt,ma,rof_ife,br
 4,Vickers 8-in. Costal Defense Gun Turret,,,43,,,-1,2/2/0†,,•†,,,,ST,T200L,,,,,,,,,,,,19†,1.0,jaAR200L,nat=ja|mt=none|mp=[*]ART|range=[12-500]@in_gs@sz-3.0,,ignore,
 0,Type 2 KA-MI <i>aLT</i> w/out Pontoons,,9.5,40,1.5-1.6†,44-7/45,+1,2/0,+SR,,5†,15,L,ST,T37L,1,,,2,4,,,,,,,6†,1.0,ty2kami,nat=ja,,,
 6,Type 91 <i>AC</i> w/ Opt BMG,,7,24,1.3-1.6†,31-45,-1,1,,,6,14<sup>t</sup>†,H,RST,CMG,1,<b>11</b>†<sup>1</sup>,,Opt 2<sup>S2×2</sup>†,4,Opt 2†,,,,,,"10va†, A†<sup>1</sup>",1.0,ty91ac2,nat=ja|mgs=2<sup>S2x2</sup>/4,,,
-6,Type 91 <i>AC</i> w/ Opt BMG & AAMG,,7,24,1.3-1.6†,31-45,-1,1,,,6,14<sup>t</sup>†,H,RST,CMG,1,<b>11</b>†<sup>1</sup>,,Opt 2<sup>S2×2</sup>†,4,Opt 2†,,,,,,"10vb†, A†<sup>1</sup>",1.0,ty91ac3,nat=ja|mgs=2<sup>S2x2</sup>/4/2,,,
+6,Type 91 <i>AC</i> w/ Opt BMG & AAMG,,7,24,1.3-1.6†,31-45,-1,1,,,6,14<sup>t</sup>†,H,RST,CMG,1,<b>11</b>†<sup>1</sup>,,Opt 2<sup>S2×2</sup>†,4,Opt 2†,,,,,,"10vb†, A†<sup>1</sup>",1.1,ty91ac3,nat=ja|mgs=2<sup>S2x2</sup>/4/2@sz-1.0,,,
 0,Type 92 <i>AC</i> w/ Opt BMG,,6,24,1.5-1.6†,32-45†,0,0,,,4,19<sup>t</sup>†,H,RST,CMG,1,<b>11</b>†<sup>1</sup>,,Opt 2†,4,,,,,,,"11v†, A†<sup>1</sup>",1.0,ty92ac2,nat=ja|mgs=2/4,,,
 0,Vickers 8-in. Coastal Defense Gun Turret,,,43,,,-1,2/2/0†,,•†,,,,ST,T200L,,,,,,,,,,,,19v†,1.0,jaAR200Lb,nat=ja|copy,,,
 0,Generic Armored Car <i>AC</i>,,,,,,,,,,,,,,,,,,,,,,,,,,g1,1.0,JAAC,nat=ja,,,

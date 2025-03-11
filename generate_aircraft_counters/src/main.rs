@@ -4,9 +4,14 @@ use std::{error::Error, io, process};
 // This lets us write `#[derive(Deserialize)]`.
 use serde::Deserialize;
 //
+// Command line argument processing.
+//
+use clap::Parser;
+//
 // Local files.
 //
 use common_functions::*;
+use common_functions::arguments::*;
 use common_functions::armament::*;
 use common_functions::colors::*;
 use common_functions::common_record::*;
@@ -93,7 +98,7 @@ const AA_HEIGHT: f64 =			11.22;
 //
 #[derive(Default)]
 struct Record {
-	destination: String,
+	args: Arguments,
 	nationality: String,
 	name: String,
 	class: TextField,
@@ -266,18 +271,11 @@ fn generate_observation_plane_counter_front(mut counter_file: &std::fs::File, re
 	write!(counter_file, "\t<text x=\"30.00\" y=\"55.00\" dominant-baseline=\"auto\" text-anchor=\"middle\" style=\"font-size:9.00px;{FONT_WEIGHT_BOLD};font-family:{0};fill:black\">Sighting TC</text>\n", &FONT_MAIN.to_string()).unwrap();
 }
 
-fn generate_counter_front(mut counter_file: &std::fs::File, path: &String, record: &mut Record) {
-	
-	write!(counter_file, "\t<svg width=\"60.00\" height=\"60.00\" viewBox=\"0 0 1000 1000\">\n").unwrap();
-
-	generate_counter_background_svg(counter_file, &record.colors, &record.overrides);
-
-	write!(counter_file, "\t</svg>\n").unwrap();
-
+fn generate_counter_front(counter_file: &std::fs::File, path: &String, record: &mut Record) {
+	generate_counter_background_svg(counter_file, 60, &record.colors, &record.overrides);
 	generate_debug_working_area_svg(&counter_file);
-	
 	record.generate_aircraft_depiction_svg_elements(counter_file, &path);
-	generate_unit_depiction_svg_elements(counter_file, &record.note, &record.name, false, &record.colors);
+	generate_unit_depiction_svg_elements(counter_file, &record.note, &record.name, false, &record.colors, &record.args);
 
 	if "LG" == record.class.text {
 		generate_landed_glider_counter_front(&counter_file, record, false);
@@ -410,9 +408,13 @@ TODO: CREATE_WRECKS NOT YET? */
 // TODO: NOT YET }
 
 fn generate_counter(record: &mut Record, note_number: &String) {
-	print!("Generating '{0}.svg' ({1}) ...", record.piece, note_number);
+	if !record.args.quiet {
+		print!("Generating '{0}.svg' ({1}) ...", record.piece, note_number);
+	} else {
+		println!("{0}", record.piece);
+	}
 
-	let path = &record.destination.to_string();
+	let path = &record.args.destination.to_string();
 	//
 	// Create the front counter file.
 	//
@@ -421,7 +423,7 @@ fn generate_counter(record: &mut Record, note_number: &String) {
 		Ok(counter_file) => counter_file,
 	};
 
-	generate_large_counter_header_svg_elements("vasl_aircraft_counters", &counter_file, &note_number, &record.name, &record.comments, &record.version);
+	generate_counter_header_svg_elements("vasl_aircraft_counters", &counter_file, 60, &record.name, &note_number, &record.comments, &record.version);
 	generate_counter_front(&counter_file, &path, record);
 	generate_footer_svg(&counter_file);
 
@@ -444,7 +446,10 @@ fn generate_counter(record: &mut Record, note_number: &String) {
 		drop(counter_file);
 	}
 TODO: NOT YET? */
-	println!(" done.");
+
+	if !record.args.quiet {
+		println!(" done.");
+	}
 }
 
 fn generate_counters(record: &mut Record) {
@@ -485,13 +490,15 @@ struct SpreadsheetRecord {
 }
 
 impl SpreadsheetRecord {
-	fn sanitize(&mut self, destination: &String) -> Record {
+	fn sanitize(&mut self, args: &Arguments) -> Record {
 		let mut result: Record = Default::default();
 		
-		result.destination = destination.to_string();
+		result.args = args.clone();
+		
 		result.nationality = extract_from(&self.overrides, NOVR_NATIONALITY);
 		
 		result.overrides.sanitize(&self.overrides);
+		
 		result.note = extract_note_number(&self.notes);
 		
 		if !result.overrides.name.is_empty() {
@@ -507,10 +514,13 @@ impl SpreadsheetRecord {
 		}
 
 		result.class.text = strip_html_italics(&result.name);
+		
 		result.class.sanitize(&strip_html_italics(&result.name), &"".to_string(), CLASS_FONTS, &result.colors);
 		
 		result.date.color = result.colors.text.to_string();
+		
 		result.date.fonts.initialize(DATE_FONTS);
+		
 		result.date.text = self.date.to_string();
 		
 		if !self.aa.is_empty() {
@@ -519,6 +529,7 @@ impl SpreadsheetRecord {
 		}
 
 		result.ml.text = self.ml.to_string();
+		
 		result.ml.sanitize(&self.ml.to_string(), &"".to_string(), ML_FONTS, &result.colors);
 
 		if !self.ord.is_empty() {
@@ -579,15 +590,18 @@ impl SpreadsheetRecord {
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
+	let mut args = Arguments::parse();
+	
+	args.sanitize_destination();
+	args.destination.push_str("sh/");
+	
 	let mut rdr = csv::Reader::from_reader(io::stdin());
-	let destination = format!("{0}sh/", get_destination_arg()); // get_destination() ensures a trailing '/'
 
 	for result in rdr.deserialize() {
 		let mut spreadsheet_record: SpreadsheetRecord = result?;
 
 		if !spreadsheet_record.overrides.contains(NOVR_IGNORE) {
-			// println!("{:?}", spreadsheet_record); // For debugging
-			let mut record: Record = spreadsheet_record.sanitize(&destination);
+			let mut record: Record = spreadsheet_record.sanitize(&args);
 			
 			generate_counters(&mut record);
 		}

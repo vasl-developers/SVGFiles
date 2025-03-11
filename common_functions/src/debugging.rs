@@ -7,7 +7,6 @@ use crate::text_field::*;
 pub const DEBUG_GRID: bool =			false;
 pub const DEBUG_GUN_LINE: bool =		false;
 pub const DEBUG_LAYOUT: bool =			false;
-pub const DEBUG_INCLUDE_NOTE: bool =	false;
 pub const DEBUG_WORKING_AREA: bool =	false;
 
 pub const DEBUG_NOTE_FONT_SIZE: f64 =		16.0;
@@ -32,12 +31,10 @@ macro_rules! debug_rectangle {
 }
 
 pub fn generate_debug_note_svg(mut counter_file: &std::fs::File, note: &String) {
-	if DEBUG_INCLUDE_NOTE {
-		let font_size: f64 = if 2 >= note.len() { DEBUG_NOTE_FONT_SIZE } else { DEBUG_NOTE_FONT_ALT_SIZE };
-		
-		write!(counter_file, "\t<!-- Chapter H Note # -->\n").unwrap();
-		write!(counter_file, "\t<text x=\"50%\" y=\"57%\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{0:.2}px;font-weight:normal;font-family:{1};fill:red;fill-opacity:1;stroke:white;stroke-opacity:1;stroke-width:0.4\">{2}</tspan></text>\n", font_size, FONT_MAIN, note).unwrap();
-	}
+	let font_size: f64 = if 2 >= note.len() { DEBUG_NOTE_FONT_SIZE } else { DEBUG_NOTE_FONT_ALT_SIZE };
+	
+	write!(counter_file, "\t<!-- Chapter H Note # -->\n").unwrap();
+	write!(counter_file, "\t<text x=\"50%\" y=\"57%\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{0:.2}px;font-weight:normal;font-family:{1};fill:red;fill-opacity:1;stroke:white;stroke-opacity:1;stroke-width:0.4\">{2}</tspan></text>\n", font_size, FONT_MAIN, note).unwrap();
 }
 
 pub fn generate_debug_grid_svg(mut counter_file: &std::fs::File) {

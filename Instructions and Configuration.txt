@@ -18,9 +18,9 @@ Check out vasl_svg_counters and check out or extract VASL vmod
 			
 			bash run_all.sh "../vasl-6.6.8/images"
 
-		To clean the executables/libraries and remove all generated SVG files.
+		To clean the executables/libraries.
 	
-			bash clean_all.sh
+			cargo clean
 
 		To complile the executables and generate JUST the vehicle SVG counters (into the folder "../vasl-6.6.8/images") for all the nationalities.
 

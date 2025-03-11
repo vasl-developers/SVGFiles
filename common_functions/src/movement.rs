@@ -18,7 +18,7 @@ pub const GP_FONT_SIZE_STR: &str =	"6.0";
 pub const GP_SIX_LOBED_ASTERISK_SVG: &str = formatcp!("<tspan style=\"font-family:{0};{FONT_WEIGHT_BOLD};font-size:{1}px\">{2}</tspan>", FONT_ALT, GP_FONT_SIZE_STR, SIX_LOBED_ASTERISK_UC);
 
 pub const MP_FONTS: [[f64; 4]; 8] = [
-	[  11.0,   5.0,  96.0,   8.0 ],	// FONT_NORMAL:			[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]		
+	[  11.0,   5.0,  84.0,   8.0 ],	// FONT_NORMAL:			[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]
 	[  11.0,   5.0,  72.0,  11.0 ],	// FONT_UNDERLINED: 	[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]
 	[  11.0,   5.0,  96.0,  11.0 ],	// FONT_OVERLINED:		[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]
 	[  11.0,   5.0,  77.0,  14.0 ],	// FONT_BOTHLINED:		[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]
@@ -246,11 +246,11 @@ impl VehicleMovementValues {
 	
 			match self.mt {
 				MovementType::FullyTracked => {
-					write!(counter_file, "\t\t<rect x=\"6.00\" y=\"0.00\" ry=\"6.00\" width=\"21.00\" height=\"12.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", self.mt_color).unwrap();
+					write!(counter_file, "\t\t<rect x=\"6.00\" width=\"21.00\" height=\"12.00\" y=\"0.00\" ry=\"6.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", self.mt_color).unwrap();
 				}
 				MovementType::HalfTracked => {
 					write!(counter_file, "\t\t<circle cx=\"10.00\" cy=\"75%\" r=\"3.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:6;stroke-dasharray:none;stroke-opacity:1\"></circle>\n", self.mt_color).unwrap();
-					write!(counter_file, "\t\t<rect x=\"12.00\" y=\"0.00\" ry=\"6.00\" width=\"15.00\" height=\"12.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", self.mt_color).unwrap();
+					write!(counter_file, "\t\t<rect x=\"12.00\" y=\"0.00\" width=\"15.00\" height=\"12.00\" ry=\"6.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", self.mt_color).unwrap();
 				}
 				MovementType::ArmoredCar => {
 					write!(counter_file, "\t\t<circle cx=\"21.00\" cy=\"50%\" r=\"6.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:6;stroke-dasharray:none;stroke-opacity:1\"></circle>\n", self.mt_color).unwrap();
@@ -260,7 +260,7 @@ impl VehicleMovementValues {
 					write!(counter_file, "\t\t<circle cx=\"8.00\" cy=\"50%\" r=\"6.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:6;stroke-dasharray:none;stroke-opacity:1\"></circle>\n", self.mt_color).unwrap();
 				}
 				MovementType::Skis => {
-					write!(counter_file, "\t\t<rect x=\"7.00\" y=\"50%\" ry=\"0.00\" width=\"19.00\" height=\"3.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", self.mt_color).unwrap();
+					write!(counter_file, "\t\t<rect x=\"7.00\" y=\"50%\" width=\"19.00\" height=\"3.00\" ry=\"0.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", self.mt_color).unwrap();
 				}
 				MovementType::Motorcycle | MovementType::Nimbus | MovementType::None => {
 				}
@@ -271,7 +271,7 @@ impl VehicleMovementValues {
 			let mut movement_points_svg: String;
 			
 			if colors.is_ss {
-				movement_points_svg = format!("\t\t<text x=\"100%\" y=\"{0:.2}%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{1:.2}px;{FONT_WEIGHT_BOLD};font-family:{2};fill:{3};stroke:{4};stroke-width:0.33\">", &self.points.fonts.y_percentage(), &self.points.fonts.size(), &FONT_MAIN.to_string(), &self.points.color, &self.mt_color);
+				movement_points_svg = format!("\t\t<text x=\"98%\" y=\"{0:.2}%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{1:.2}px;{FONT_WEIGHT_BOLD};font-family:{2};fill:{3};stroke:{4};stroke-width:0.33\">", &self.points.fonts.y_percentage(), &self.points.fonts.size(), &FONT_MAIN.to_string(), &self.points.color, &self.mt_color);
 			} else {
 				movement_points_svg = format!("\t\t<text x=\"100%\" y=\"{0:.2}%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{1:.2}px;{FONT_WEIGHT_BOLD};font-family:{2};fill:{3}\">", &self.points.fonts.y_percentage(), &self.points.fonts.size(), &FONT_MAIN.to_string(), &self.points.color);
 			}

@@ -13,7 +13,6 @@ use crate::utils::*;
 //
 #[derive(Default)]
 pub struct CommonRecord {
-	pub destination: String,
 	pub nationality: String,
 	pub note: String,
 	pub name: String,

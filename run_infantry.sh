@@ -1,29 +1,59 @@
 #!/bin/bash
 
+export BASH_ARGS=
+export RUST_ARGS=
 export DESTINATION="./images"
+export NATIONALITY=
 
-if [ $# -eq 1 ]
-then
-	DESTINATION=$1
-fi
+while getopts dD:N:q option
+do
+	case "${option}" in
+		d)
+			BASH_ARGS="${BASH_ARGS} -d"
+			RUST_ARGS="${RUST_ARGS} --debug"
+			;;
+		D)
+			DESTINATION="${OPTARG}"
+			;;
+		N)
+			NATIONALITY="${OPTARG}"
+			;;
+		q)
+			BASH_ARGS="${BASH_ARGS} -q"
+			RUST_ARGS="${RUST_ARGS} --quiet"
+			;;
+	esac
+done
+
+BASH_ARGS="-D ${DESTINATION} -N ${NATIONALITY} ${BASH_ARGS}"
+RUST_ARGS="--destination ${DESTINATION} ${RUST_ARGS}"
 
 date
 
-for j in allied american axis british chinese communist finnish french german italian japanese russian un
+for n in ${NATIONALITY}
 do
-	SMC_FILE=data/${j}_smc.csv
-	if [ -f "${SMC_FILE}" ]
+	bash run_copy_cached_files.sh ${BASH_ARGS}
+
+	CSV_FILE=data/${n}_smc.csv
+	if [ -f "${CSV_FILE}" ]
 	then
-		echo "Generating ${j} single man counters"
-		cargo run --bin generate_singleman_counters ${DESTINATION} < ${SMC_FILE}
+		echo "Generating ${n} single man counters"
+		cargo run --bin generate_singleman_counters -- ${RUST_ARGS} < ${CSV_FILE}
+	fi
+
+	CSV_FILE=data/${n}_mmc.csv
+	if [ -f "${CSV_FILE}" ]
+	then
+		echo "Generating ${n} multi-man counters"
+		cargo run --bin generate_multiman_counters -- ${RUST_ARGS} < ${CSV_FILE}
 	fi
 	
-	MMC_FILE=data/${j}_mmc.csv
-	if [ -f "${MMC_FILE}" ]
+	CSV_FILE=data/${n}_sw.csv
+	if [ -f "${CSV_FILE}" ]
 	then
-		echo "Generating ${j} multi man counters"
-		cargo run --bin generate_multiman_counters ${DESTINATION} < ${MMC_FILE}
+		echo "Generating ${n} support weapon counters"
+		cargo run --bin generate_sw_counters -- ${RUST_ARGS} < ${CSV_FILE}
 	fi	
 done
-
+	
 date

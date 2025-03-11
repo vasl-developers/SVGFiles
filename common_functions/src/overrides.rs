@@ -12,8 +12,10 @@ pub const NOVR_ANNOUNCE: &str =				"announce";			// Announce the line.
 pub const NOVR_SPECIAL_AMMO: &str =			"ammo=";			// Special ammunition values, override values with MOD_TEXT (include '[' and ']'), can also specify alternate location (MOD_LOCATION) and font size (MOD_FONT_SIZE).
 pub const NOVR_BACKGROUND_COLOR: &str =		"bkg=";				// Override the counter's background color.
 pub const NOVR_CAPTURED: &str =				"cap=";				// Piece is captured.
-pub const NOVR_COPY: &str =					"copy";	
+pub const NOVR_COPY: &str =					"copy";
+pub const NOVR_COUNTER_SIZE: &str =			"counter_size=";
 pub const NOVR_DISPLAY_NAME: &str =			"display_name";		// Display name (overrides INCLUDE_NAME)
+pub const NOVR_EXTRA_INFO: &str =			"extra=";			// Show extra information on the counter.
 pub const NOVR_FIXED_BMG: &str =			"fixed_bmg";		// Fixed BMG. Following the '@' is the x-axis center of the white circle that should be displayed behind the BMG factor.
 pub const NOVR_GP: &str =					"gp=";	
 pub const NOVR_GT: &str =					"gt=";	
@@ -30,6 +32,7 @@ pub const NOVR_MT: &str =					"mt=";				// Override movement type normally extra
 pub const NOVR_MULTIPLE_HITS: &str =		"multi_hits";		// Main armament is eligible for multiple hits.
 pub const NOVR_NATIONALITY: &str =			"nat=";				// Provides nationality for vehicle counters that don't include it in the piece name like ordnance pieces do and for Axis Minors which have unique prefixes.
 pub const NOVR_NAME: &str =					"name=";			// Replace name on counter and in SVG documentation.
+pub const NOVR_OPACITY: &str =				"opacity=";			// Translucent counter (e.g., xxSnS - small sniper).
 pub const NOVR_PP_NUMBER: &str =			"pp=";				// PP number.
 pub const NOVR_QUALIFIER: &str =			"qual=";	
 pub const NOVR_RANGE: &str =				"range=";			// Show range value(s), override values with MOD_TEXT (include '[' and ']'), can also specify alternate location (MOD_LOCATION) and font size (MOD_FONT_SIZE).
@@ -40,6 +43,7 @@ pub const NOVR_SA_MOVING_TARGET: &str =		"sa_movt";			// Secondary armament movi
 pub const NOVR_SB: &str =					"sb=";				// Secondary armament breakdown.
 pub const NOVR_SHIFT_ARMOR: &str =			"shift_armor_down";	// Shift armor values down.
 pub const NOVR_SIZE: &str =					"size=";			// Target size.
+pub const NOVR_STRIPED: &str =				"striped";			// Japanese & Communist Chinese "striped" Squads and Crews.
 pub const NOVR_TA: &str =					"ta=";				// Turret armor modifies (Superior, inferior ...).
 pub const NOVR_TOWING_NUMBER: &str =		"tow=";				// Towing number.
 pub const NOVR_ARMOR_FRONT: &str =			"far=";				// Front armor.
@@ -50,6 +54,7 @@ pub const NOVR_ARMOR_REAR: &str =			"rar=";				// Rear armor.
 //
 pub const MOD_DELIMITER1: char =		':';	// Delimiter to separate multiple modifiers.
 pub const MOD_DELIMITER2: char =		'@';	// Delimiter to separate multiple modifiers.
+pub const MOD_DELIMITER3: char =		'!';	// Delimiter to separate multiple lines for NOVR_EXTRA_INFO.
 // TODO DEPRECATED? //
 // TODO DEPRECATED? // Modifiers for sticking asterisks in various and sundry places.
 // TODO DEPRECATED? //
@@ -107,7 +112,9 @@ pub struct Overrides {
 	pub background_color: String,
 	pub captured: String,
 	pub copy: bool,
+	pub counter_size: u32,
 	pub display_name: bool,
+	pub extra_info: String,
 	pub fixed_bmg: bool,
 	pub ground_pressure: String,
 	pub gt: String,
@@ -123,6 +130,7 @@ pub struct Overrides {
 	pub nationality: String,
 	pub nm: bool,
 	pub note_qualifier: String,
+	pub opacity: f64,
 	pub pp_number: String,
 	pub pp_number_ignore: bool,
 	pub rfnm: bool,
@@ -134,10 +142,13 @@ pub struct Overrides {
 	pub special_ammo: String,
 	pub towing_number: String,
 	pub turret_armor_modifiers: String,
+	pub striped: bool,
 }
 
 impl Overrides {
 	pub fn sanitize(&mut self, overrides: &String) {
+		self.opacity = 1.00;
+		
 		if !overrides.is_empty() {
 			let entries: Vec<std::string::String> = extract_vector(&overrides, OVERRIDE_DELIMITER);
 			
@@ -155,11 +166,15 @@ impl Overrides {
 				} else if entry.contains(NOVR_BACKGROUND_COLOR) {
 					self.background_color = extract_from(&entry, NOVR_BACKGROUND_COLOR);
 				} else if entry.contains(NOVR_CAPTURED) {
-					self.captured = extract_from(&entry, NOVR_CAPTURED);
+					self.captured = extract_from(&entry, NOVR_CAPTURED);					
 				} else if entry.contains(NOVR_COPY) {
 					self.copy = true;
+				} else if entry.contains(NOVR_COUNTER_SIZE) {
+					self.counter_size = extract_from(&entry, NOVR_COUNTER_SIZE).parse::<u32>().unwrap_or(48);
 				} else if entry.contains(NOVR_DISPLAY_NAME) {
 					self.display_name = true;
+				} else if entry.contains(NOVR_EXTRA_INFO) {
+					self.extra_info = extract_from(&entry, NOVR_EXTRA_INFO);					
 				} else if entry.contains(NOVR_FIXED_BMG) {
 					self.fixed_bmg = true;
 				} else if entry.contains(NOVR_GP) {
@@ -201,6 +216,8 @@ impl Overrides {
 					self.name = extract_from(&entry, NOVR_NAME);
 				} else if entry.contains(NOVR_NATIONALITY) {
 					self.nationality = extract_from(&entry, NOVR_NATIONALITY);
+				} else if entry.contains(NOVR_OPACITY) {
+					self.opacity = extract_from(&entry, NOVR_OPACITY).parse::<f64>().unwrap_or(1.00);					
 				} else if entry.contains(NOVR_PP_NUMBER) {
 					self.pp_number = extract_from(&entry, NOVR_PP_NUMBER);
 					self.pp_number_ignore = self.pp_number.is_empty();
@@ -222,6 +239,8 @@ impl Overrides {
 					self.sa.moving_target_penalty = true;
 				} else if entry.contains(NOVR_SIZE) {
 					self.target_size = extract_from(&entry, NOVR_SIZE);
+				} else if entry.contains(NOVR_STRIPED) {
+					self.striped = true;
 				} else if entry.contains(NOVR_SPECIAL_AMMO) {
 					self.special_ammo = extract_from(&entry, NOVR_SPECIAL_AMMO);
 				} else if entry.contains(NOVR_TOWING_NUMBER) {

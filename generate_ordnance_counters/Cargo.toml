@@ -11,4 +11,5 @@ description.workspace = true
 csv.workspace = true
 regex.workspace = true
 serde.workspace = true
+clap = { version = "4.5.31", features = ["derive"] }
 common_functions = { path = "../common_functions" }

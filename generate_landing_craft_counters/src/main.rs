@@ -3,9 +3,14 @@ use std::{error::Error, io, process};
 // This lets us write `#[derive(Deserialize)]`.
 use serde::Deserialize;
 //
+// Command line argument processing.
+//
+use clap::Parser;
+//
 // Local files.
 //
 use common_functions::*;
+use common_functions::arguments::*;
 use common_functions::armament::*;
 use common_functions::armor::*;
 use common_functions::colors::*;
@@ -26,6 +31,7 @@ pub const BOG_FONT_SIZE: f64 = 8.0;
 //
 #[derive(Default)]
 struct Record {
+	args: Arguments,
 	common: CommonRecord,
 	sa: Armament,
 	sa_malfunction: Malfunction,
@@ -88,24 +94,13 @@ fn generate_armament_elements(counter_file: &std::fs::File, record: &Record) {
 }
 
 fn generate_counter_front(mut counter_file: &std::fs::File, path: &String, record: &mut Record) {
-	write!(counter_file, "\t<svg width=\"60.00\" height=\"60.00\" viewBox=\"0 0 1000 1000\">\n").unwrap();
-
-	generate_counter_background_svg(counter_file, &record.common.colors, &record.common.overrides);
-
-	write!(counter_file, "\t</svg>\n").unwrap();
-
+	generate_counter_background_svg(counter_file, 60, &record.common.colors, &record.common.overrides);
 	generate_debug_working_area_svg(&counter_file);
-	
 	record.common.turret.generate_svg_elements(&counter_file);
-	
-	generate_unit_depiction_svg(counter_file, &path, &record.common.piece_front, &record.common.note, &record.common.svg_image_transform, true, &record.common.name, record.common.display_name, &record.common.colors);
-
+	generate_unit_depiction_svg(counter_file, &path, &record.common.piece_front, &record.common.note, &record.common.svg_image_transform, true, &record.common.name, record.common.display_name, &record.common.colors, &record.args);
 	generate_armament_elements(&counter_file, &record); // Construct the whole "gun stack" of information, containing (potentially) the gun caliber, ROF, breakdown number, IFE, PP #, etc.).
-
 	record.armor.generate_svg_elements(&counter_file);
-	
 	record.mgs.generate_svg_elements(&counter_file);
-
 	record.movement_values.generate_svg_elements(&counter_file, &record.common.colors);	
 
 	if record.transport_values.manhandling_number.is_set {
@@ -213,9 +208,13 @@ TODO: CREATE_WRECKS NOT YET? */
 // TODO: NOT YET }
 
 fn generate_counter(record: &mut Record, note_number: &String) {
-	print!("Generating '{0}.svg' ({1}) ...", record.common.piece_front, note_number);
+	if !record.args.quiet {
+		print!("Generating '{0}.svg' ({1}) ...", record.common.piece_front, note_number);
+	} else {
+		println!("{0}", record.common.piece_front);
+	}
 
-	let path = &record.common.destination.to_string();
+	let path = &record.args.destination.to_string();
 	//
 	// Create the front counter file.
 	//
@@ -224,7 +223,7 @@ fn generate_counter(record: &mut Record, note_number: &String) {
 		Ok(counter_file) => counter_file,
 	};
 	
-	generate_large_counter_header_svg_elements("vasl_landing_craft_and_boats_counters", &counter_file, &note_number, &record.common.name, &record.common.comments, &record.common.version);
+	generate_counter_header_svg_elements("vasl_landing_craft_and_boats_counters", &counter_file, 60, &record.common.name, &note_number, &record.common.comments, &record.common.version);
 	generate_counter_front(&counter_file, &path, record);
 	generate_footer_svg(&counter_file);
 	
@@ -247,7 +246,10 @@ fn generate_counter(record: &mut Record, note_number: &String) {
 		drop(counter_file);
 	}
 TODO: NOT YET? */
-	println!(" done.");
+
+	if !record.args.quiet {
+		println!(" done.");
+	}
 }
 
 fn generate_counters(record: &mut Record) {
@@ -301,17 +303,22 @@ struct SpreadsheetRecord {
 }
 
 impl SpreadsheetRecord {
-	fn sanitize(&mut self, destination: &String, nat: &String) -> Record {
+	fn sanitize(&mut self, nat: &String, args: &Arguments) -> Record {
 		let mut result: Record = Default::default();
 		let nationality = if nat.is_empty() { extract_from(&self.overrides, NOVR_NATIONALITY) } else { nat.to_string() };
 
-		result.common.destination = destination.to_string();
+		result.args = args.clone();
+		
 		result.common.overrides.sanitize(&self.overrides);
+		
 		result.common.initialize(&nationality, &self.notes, &self.name, &self.ma, &"".to_string(), &self.rof_ife, &self.breakdown, &self.version, &self.piece, &self.svg_image_transform, &self.comments);
+		
 		result.common.turret = sanitize_mount(&self.gt, &result.common.overrides, &result.common.colors);
 		
 		result.armor.initialize(&self.af, &self.ta, &self.size, &result.common.overrides, &result.common.colors);
+		
 		result.movement_values.sanitize(&self.name, &self.mp, &"".to_string(), &result.common.overrides, !self.ot.is_empty(), &result.common.colors);
+		
 		result.transport_values.lc_sanitize(&self.pp, !self.ramp.is_empty(), &result.common.overrides, &result.common.colors);
 
 		result.mgs.sanitize(&self.bmg, &"".to_string(), &self.aamg, &result.common.overrides, &result.common.colors);
@@ -337,19 +344,22 @@ impl SpreadsheetRecord {
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
+	let mut args = Arguments::parse();
+	
+	args.sanitize_destination();
+	args.destination.push_str("sh/");
+	
 	let mut rdr = csv::Reader::from_reader(io::stdin());
-	let destination = format!("{0}sh/", get_destination_arg()); // get_destination() ensures a trailing '/'
 
 	for result in rdr.deserialize() {
 		let mut spreadsheet_record: SpreadsheetRecord = result?;
 
 		if NOVR_ANNOUNCE == spreadsheet_record.overrides {
-			let announcement = strip_html_bold(&spreadsheet_record.count);
-			
-			println!("{announcement}");
+			if !args.quiet {
+				println!("{}", strip_html_bold(&spreadsheet_record.count));
+			}
 		} else if !spreadsheet_record.overrides.contains(NOVR_IGNORE) {
-			// println!("{:?}", spreadsheet_record); // For debugging
-			let mut record: Record = spreadsheet_record.sanitize(&destination, &"".to_string());
+			let mut record: Record = spreadsheet_record.sanitize(&"".to_string(), &args);
 			let pieces = record.common.pieces.clone();
 			
 			for piece in pieces {
@@ -358,7 +368,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 					generate_counters(&mut record);
 				} else {
 					let (piece_name, nationality) = piece.split_once("@").unwrap();
-					let mut alt_record: Record = spreadsheet_record.sanitize(&destination, &nationality.to_string());
+					let mut alt_record: Record = spreadsheet_record.sanitize(&nationality.to_string(), &args);
 					
 					alt_record.common.colors = nationality_to_colors(&nationality.to_string());
 					alt_record.common.piece_front = piece_name.to_string();

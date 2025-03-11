@@ -1,10 +1,11 @@
 use std::io::prelude::*;
 use std::path::Path;
-use chrono::Utc;
+// Deprecated use chrono::Utc;
 use regex::Regex;
 //
 // Local files.
 //
+pub mod arguments;
 pub mod armament;
 pub mod armor;
 pub mod debugging;
@@ -22,6 +23,7 @@ pub mod transport;
 pub mod turret;
 pub mod utils;
 
+use crate::arguments::*;
 use crate::colors::*;
 use crate::debugging::*;
 use crate::defines::*;
@@ -30,77 +32,105 @@ use crate::text_field::*;
 //
 // Values for a 1000 x 1000 pixel image.
 //
-pub const BEVEL_WIDTH_WIDE: f32 =		50.2572;
-pub const BEVEL_WIDTH_MEDIUM: f32 =		25.1286;
-pub const BEVEL_WIDTH_NARROW: f32 =		12.5643;
+pub const BEVEL_WIDTH_WIDE: f32 =	50.2572;
+pub const BEVEL_WIDTH_MEDIUM: f32 =	25.1286;
+pub const BEVEL_WIDTH_NARROW: f32 =	12.5643;
 
-pub const BEVEL_HIGHLIGHT_HIGH: f32 =	 1.0;
-pub const BEVEL_HIGHLIGHT_MEDIUM: f32 =	 0.75;
-pub const BEVEL_HIGHLIGHT_LOW: f32 =	 0.5;
+pub const BEVEL_HIGHLIGHT_HIGH: f32 =	100.0;
+pub const BEVEL_HIGHLIGHT_MEDIUM: f32 =	 50.0;
+pub const BEVEL_HIGHLIGHT_LOW: f32 =	 10.0;
 
-pub const BEVEL_SHADOW_HIGH: f32 =		 0.8;
-pub const BEVEL_SHADOW_MEDIUM: f32 =	 0.55;
-pub const BEVEL_SHADOW_LOW: f32 =		 0.3;
+pub const BEVEL_SHADOW_HIGH: f32 =		100.0;
+pub const BEVEL_SHADOW_MEDIUM: f32 =	 50.0;
+pub const BEVEL_SHADOW_LOW: f32 =		 10.0;
 
 pub const AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-pub fn generate_counter_background_svg(mut counter_file: &std::fs::File, colors: &Colors, overrides: &Overrides) {
-	let mut rectangle_size: u32 = 1000;
-	let mut inset: u32 = 0;
-	let delta: u32 = 75;
+fn generate_bevel_svg_elements(mut counter_file: &std::fs::File) {
+	
+	write!(counter_file, "\t<!-- The bevel - is there a better/more efficient way to achieve this? -->\n").unwrap();
+	write!(counter_file, "\t<defs id=\"bevel\">\n").unwrap();
+	write!(counter_file, "\t\t<filter id=\"highlight_filter\" x=\"-0.058226637\" y=\"-0.058226637\" width=\"1.1144796\" height=\"1.1144796\" style=\"color-interpolation-filters:sRGB;\">\n").unwrap();
+	write!(counter_file, "\t\t\t<feGaussianBlur stdDeviation=\"10 10\" result=\"fbSourceGraphic\" id=\"feGaussianBlur3\"/>\n").unwrap();
+	write!(counter_file, "\t\t\t<feColorMatrix result=\"fbSourceGraphicAlpha\" in=\"fbSourceGraphic\" values=\"0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0\" id=\"feColorMatrix3\"/>\n").unwrap();
+	write!(counter_file, "\t\t\t<feGaussianBlur id=\"feGaussianBlur4\" stdDeviation=\"10 10\" result=\"blur\" in=\"fbSourceGraphic\"/>\n").unwrap();
+	write!(counter_file, "\t\t</filter>\n").unwrap();
+	write!(counter_file, "\t\t<filter id=\"shadow_filter\" x=\"-0.030508946\" y=\"-0.030508946\" width=\"1.0629916\" height=\"1.0629916\" style=\"color-interpolation-filters:sRGB;\">\n").unwrap();
+	write!(counter_file, "\t\t\t<feGaussianBlur id=\"feGaussianBlur5\" stdDeviation=\"10 10\" result=\"blur\"/>\n").unwrap();
+	write!(counter_file, "\t\t</filter>\n").unwrap();
+	write!(counter_file, "\t\t<clipPath id=\"counter_clipping\">\n").unwrap();
+	write!(counter_file, "\t\t\t<rect x=\"0\" y=\"0\" width=\"100%\" height=\"100%\" ry=\"4\" rx=\"4\" style=\"display:inline;fill:red;fill-opacity:1;stroke:none;stroke-width:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0\"/>\n").unwrap();
+	write!(counter_file, "\t\t</clipPath>\n").unwrap();	
+	write!(counter_file, "\t</defs>\n").unwrap();
+}
 
-	if CREATE_BEVEL {
-		let stroke_width = BEVEL_WIDTH_NARROW;
-		let highlight = BEVEL_HIGHLIGHT_HIGH;
-		let shadow = BEVEL_SHADOW_LOW;
-		//
-		// TODO: Is there a better, more precise way to create the bevel and to clip the counter?
-		//
-		write!(counter_file, "\t\t<!-- Beveled counter - is there a better/more efficient way to achieve this? -->\n").unwrap();
-		write!(counter_file, "\t\t<svg x=\"{0}\" y=\"{0}\" width=\"{1}\" height=\"{1}\">\n", inset, rectangle_size).unwrap();
-		write!(counter_file, "\t\t\t<defs id=\"bevel\">\n").unwrap();
-		write!(counter_file, "\t\t\t\t<filter id=\"highlight_filter\" style=\"color-interpolation-filters:sRGB;\" x=\"-0.058226637\" y=\"-0.058226637\" width=\"1.1144796\" height=\"1.1144796\">\n").unwrap();
-		write!(counter_file, "\t\t\t\t\t<feGaussianBlur stdDeviation=\"10 10\" result=\"fbSourceGraphic\" id=\"feGaussianBlur3\"/>\n").unwrap();
-		write!(counter_file, "\t\t\t\t\t<feColorMatrix result=\"fbSourceGraphicAlpha\" in=\"fbSourceGraphic\" values=\"0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0\" id=\"feColorMatrix3\"/>\n").unwrap();
-		write!(counter_file, "\t\t\t\t\t<feGaussianBlur id=\"feGaussianBlur4\" stdDeviation=\"10 10\" result=\"blur\" in=\"fbSourceGraphic\"/>\n").unwrap();
-		write!(counter_file, "\t\t\t\t</filter>\n").unwrap();
-		write!(counter_file, "\t\t\t\t<filter id=\"shadow_filter\" style=\"color-interpolation-filters:sRGB;\" x=\"-0.030508946\" y=\"-0.030508946\" width=\"1.0629916\" height=\"1.0629916\">\n").unwrap();
-		write!(counter_file, "\t\t\t\t\t<feGaussianBlur id=\"feGaussianBlur5\" stdDeviation=\"10 10\" result=\"blur\"/>\n").unwrap();
-		write!(counter_file, "\t\t\t\t</filter>\n").unwrap();
-		write!(counter_file, "\t\t\t\t<clipPath id=\"counter_clipping\">\n").unwrap();
-		write!(counter_file, "\t\t\t\t\t<rect id=\"color\" style=\"display:inline;fill:red;fill-opacity:1;stroke:none;stroke-width:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0\" width=\"100%\" height=\"100%\" x=\"0\" y=\"0\" ry=\"60\" rx=\"60\"/>\n").unwrap();
-		write!(counter_file, "\t\t\t\t</clipPath>\n").unwrap();	
-		write!(counter_file, "\t\t\t</defs>\n").unwrap();
-		write!(counter_file, "\t\t\t<g id=\"background\">\n").unwrap();
-		write!(counter_file, "\t\t\t\t<rect id=\"color\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0\" width=\"100%\" height=\"100%\" x=\"0\" y=\"0\" ry=\"60\" rx=\"60\"/>\n", colors.background).unwrap();
-		write!(counter_file, "\t\t\t\t<g id=\"bevel\" clip-path=\"url(#counter_clipping)\">\n").unwrap();
-		write!(counter_file, "\t\t\t\t\t<path id=\"shadow\" style=\"display:inline;fill:none;stroke:#000000;stroke-width:{0};filter:url(#shadow_filter);stroke-opacity:{1}\" d=\"m 1023.6424,120.45592 c 10.8149,10.81495 17.4864,25.7734 17.4864,42.34736 v 830.07515 c 0,33.14797 -26.6859,59.83377 -59.83378,59.83377 H 151.21981 c -16.57396,0 -31.54851,-6.6875 -42.34737,-17.4864\" transform=\"matrix(1.0503456,0,0,1.0590455,-36.912259,-39.56161) translate(-60.0, -75.0)\"/>\n", stroke_width, shadow).unwrap();
-		write!(counter_file, "\t\t\t\t\t<path id=\"highlight\" style=\"display:inline;fill:none;stroke:#ffffff;stroke-width:{0};stroke-opacity:{1};filter:url(#highlight_filter)\" d=\"M 108.87244,1035.2258 C 98.057485,1024.4109 91.386017,1009.4524 91.386017,992.87843 V 162.80328 c 0,-33.14792 26.685873,-59.83379 59.833793,-59.83379 h 830.07521 c 16.57394,0 31.53238,6.67147 42.34738,17.48643\" transform=\"matrix(1.0387133,0,0,1.0339712,-12.412385,-8.9484139) translate(-66.0, -77.0)\"/>\n", stroke_width, highlight).unwrap();
-		write!(counter_file, "\t\t\t\t</g>\n").unwrap();
-		write!(counter_file, "\t\t\t</g>\n").unwrap();
-		write!(counter_file, "\t\t</svg>\n").unwrap();	
-	} else {
-		write!(counter_file, "\t\t<rect x=\"0\" y=\"0\" width=\"100%\" height=\"100%\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", colors.background).unwrap();
+pub fn generate_counter_background_svg(mut counter_file: &std::fs::File, size: u32, colors: &Colors, overrides: &Overrides) {
+	let mut rectangle_size: f64 = size.into();
+	let mut inset: f64 = 0.0;
+	let mut delta: f64 = rectangle_size * 0.075;
+	let opacity: f64 = overrides.opacity;
+	//
+	// TODO: Is there a better, more precise way to create the bevel and to clip the counter?
+	//
+	// For 60 x 60 counters from a 1000 x 1000 view box.
+	//
+	let mut x_translate: f64 = 490.0;
+	let mut y_translate: f64 = 500.0;
+	
+	if 24 == size {
+		x_translate = 290.0;
+		y_translate = 310.0;
+		rectangle_size = 48.00;
+		delta = rectangle_size * 0.075;
+	} else if 48 == size {
+		x_translate = 290.0;
+		y_translate = 310.0;		
 	}
 
+	if CREATE_BEVEL {
+		generate_bevel_svg_elements(counter_file);
+	}
+	
+	write!(counter_file, "\t<g id=\"background\">\n").unwrap();
+	
+	
+	write!(counter_file, "\t\t<rect id=\"color\" x=\"0\" y=\"0\" width=\"100%\" height=\"100%\" ry=\"4\" rx=\"4\" style=\"display:inline;fill:{0};fill-opacity:{opacity};stroke:none;stroke-width:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0\"/>\n", colors.background).unwrap();
+
 	if !colors.inner_background.is_empty() {
-		rectangle_size -= 2 * delta;
+		rectangle_size -= 2.0 * delta;
 		inset += delta;
-		write!(counter_file, "\t\t<rect x=\"{0}\" y=\"{0}\" rx=\"40\" ry=\"40\" width=\"{1}\" height=\"{1}\" style=\"display:inline;fill:{2};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", inset, rectangle_size, colors.inner_background).unwrap();
+		write!(counter_file, "\t\t<rect id=\"inner color\" x=\"{0:.2}\" y=\"{0:.2}\" width=\"{1:.2}\" height=\"{1:.2}\" style=\"display:inline;fill:{2};fill-opacity:{opacity};stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", inset, rectangle_size, colors.inner_background).unwrap();
 	}
 
 	if !overrides.captured.is_empty() {
-		rectangle_size -= 2 * delta;
+		rectangle_size -= 2.0 * delta;
 		inset += delta;
 
 		generate_captured_background_svg(counter_file, &overrides, rectangle_size, inset, delta);
 	}
+
+	if overrides.striped {
+		if !colors.inner_background.is_empty() {
+			write!(counter_file, "\t\t<rect x=\"3.60\" y=\"34\" width=\"40.8\" height=\"10.40\" style=\"display:inline;fill:red;fill-opacity:{opacity};stroke:none;stroke-width:0;stroke-dasharray:none;stroke-opacity:1\"/>\n").unwrap();
+		} else {
+			write!(counter_file, "\t\t<rect x=\"0.00\" y=\"34\" width=\"48.00\" height=\"10.40\" style=\"display:inline;fill:red;fill-opacity:{opacity};stroke:none;stroke-width:0;stroke-dasharray:none;stroke-opacity:1\"/>\n").unwrap();
+		}
+	}
+	
+	if CREATE_BEVEL {
+		write!(counter_file, "\t\t<g id=\"bevel\" clip-path=\"url(#counter_clipping)\">\n").unwrap();
+		write!(counter_file, "\t\t\t<path id=\"shadow\" style=\"display:inline;fill:none;stroke:#000000;stroke-width:{BEVEL_WIDTH_MEDIUM};filter:url(#shadow_filter);stroke-opacity:{BEVEL_SHADOW_MEDIUM}\" d=\"m 1023.6424,120.45592 c 10.8149,10.81495 17.4864,25.7734 17.4864,42.34736 v 830.07515 c 0,33.14797 -26.6859,59.83377 -59.83378,59.83377 H 151.21981 c -16.57396,0 -31.54851,-6.6875 -42.34737,-17.4864\" transform=\"matrix(1.0503456,0,0,1.0590455,-36.912259,-39.56161) scale(0.06) translate({0},{1})\"/>\n", x_translate, y_translate).unwrap();
+		write!(counter_file, "\t\t\t<path id=\"highlight\" style=\"display:inline;fill:none;stroke:#ffffff;stroke-width:{BEVEL_WIDTH_MEDIUM};stroke-opacity:{BEVEL_HIGHLIGHT_MEDIUM};filter:url(#highlight_filter)\" d=\"M 108.87244,1035.2258 C 98.057485,1024.4109 91.386017,1009.4524 91.386017,992.87843 V 162.80328 c 0,-33.14792 26.685873,-59.83379 59.833793,-59.83379 h 830.07521 c 16.57394,0 31.53238,6.67147 42.34738,17.48643\" transform=\"matrix(1.0387133,0,0,1.0339712,-12.412385,-8.9484139) scale(0.06) translate(118,54)\"/>\n").unwrap();		
+		write!(counter_file, "\t\t</g>\n").unwrap();
+	}
+	
+	write!(counter_file, "\t</g>\n").unwrap();
 	
 	generate_debug_grid_svg(counter_file);
 }
 
-pub fn generate_unit_depiction_svg(mut counter_file: &std::fs::File, root_path: &String, filename: &String, note: &String, svg_transform: &String, front: bool, name: &String, display_name: bool, colors: &Colors) {
+pub fn generate_unit_depiction_svg(mut counter_file: &std::fs::File, root_path: &String, filename: &String, note: &String, svg_transform: &String, front: bool, name: &String, display_name: bool, colors: &Colors, args: &Arguments) {
 	if INCLUDE_IMAGES {
 		let path_prefix = "svg/";
 		let file_type_svg = ".svg";
@@ -139,7 +169,9 @@ pub fn generate_unit_depiction_svg(mut counter_file: &std::fs::File, root_path: 
 		}
 	}
 
-	generate_debug_note_svg(counter_file, note);
+	if args.notes {
+		generate_debug_note_svg(counter_file, note);
+	}
 	
 	if INCLUDE_NAME || display_name {
 		let mut temp_name: String = name.to_string();
@@ -152,8 +184,10 @@ pub fn generate_unit_depiction_svg(mut counter_file: &std::fs::File, root_path: 
 	}	
 }
 
-pub fn generate_unit_depiction_svg_elements(mut counter_file: &std::fs::File, note: &String, name: &String, display_name: bool, colors: &Colors) {
-	generate_debug_note_svg(counter_file, note);
+pub fn generate_unit_depiction_svg_elements(mut counter_file: &std::fs::File, note: &String, name: &String, display_name: bool, colors: &Colors, args: &Arguments) {
+	if args.notes {
+		generate_debug_note_svg(counter_file, note);
+	}
 	
 	if INCLUDE_NAME || display_name {
 		let mut temp_name: String = name.to_string();
@@ -166,66 +200,23 @@ pub fn generate_unit_depiction_svg_elements(mut counter_file: &std::fs::File, no
 	}	
 }
 
-pub fn generate_large_counter_header_svg_elements(program_name: &'static str, mut counter_file: &std::fs::File, note_number: &String, name: &String, comment: &String, version: &String) {
-	write!(counter_file, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n").unwrap();
-	write!(counter_file, "<svg width=\"60\" height=\"60\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n").unwrap();
-	write!(counter_file, "\t<!--\n").unwrap();
-	write!(counter_file, "\t\tNote #:\t\t{0}\n", note_number).unwrap();
-	write!(counter_file, "\t\tName:\t\t{0}\n", name).unwrap();
-
-	if 0 != comment.len() {
-		write!(counter_file, "\t\tComment:\t{0}\n", comment).unwrap();
-	}
-
-	write!(counter_file, "\t\tVersion:\t{0}\n\n", version).unwrap();
-	write!(counter_file, "\t\tGenerated by {0} version {1} on {2}\n", program_name, VERSION, Utc::now().format("%F")).unwrap();
-
-	let mut authors_list: String = "\t\tAuthor(s):".to_string();
-
-	if AUTHORS.contains(':') {
-		let authors = AUTHORS.split(':');
-		let mut first = true;
-
-		for author in authors {
-			if !author.is_empty() {
-				if !first {
-					authors_list.push_str(",");
-				} else {
-					first = false;
-				}
-
-				authors_list.push_str(" ");
-				authors_list.push_str(author);
-			}
-		}
-	} else {
-		authors_list.push_str(" ");
-		authors_list.push_str(AUTHORS);
-	}
-
-	write!(counter_file, "{0}\n", authors_list).unwrap();
-	write!(counter_file, "\t\tTester(s): Alan Bills, Alan Cannamore, Doug Rimmer\n").unwrap();
-
-	let filename: String = if "vasl_vehicle_counters" == program_name { "Vehicle".to_string() } else { "Ordnance".to_string() };
-	
-	write!(counter_file, "\t\tCounter data scraped with permission from: https://www.klasm.com/ASL/Listings/{filename}Listings.html\n").unwrap();
-	write!(counter_file, "\t-->\n\n").unwrap();
-
-	embed_fonts_svg(&counter_file);
-}
-
-pub fn generate_counter_header_svg_elements(program_name: &'static str, mut counter_file: &std::fs::File, size: usize, name: &String, comment: &String, version: &String) {
+pub fn generate_counter_header_svg_elements(program_name: &'static str, mut counter_file: &std::fs::File, size: u32, name: &String, note_number: &String, comment: &String, version: &String) {
 	write!(counter_file, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n").unwrap();
 	write!(counter_file, "<svg width=\"{size}\" height=\"{size}\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n").unwrap();
 	write!(counter_file, "\t<!--\n").unwrap();
+	
+	if !note_number.is_empty() {
+		write!(counter_file, "\t\tNote #:\t\t{0}\n", note_number).unwrap();
+	}
+	
 	write!(counter_file, "\t\tName:\t\t{0}\n", name).unwrap();
 
-	if 0 != comment.len() {
+	if !comment.is_empty() {
 		write!(counter_file, "\t\tComment:\t{0}\n", comment).unwrap();
 	}
 
 	write!(counter_file, "\t\tVersion:\t{0}\n\n", version).unwrap();
-	write!(counter_file, "\t\tGenerated by {0} version {1} on {2}\n", program_name, VERSION, Utc::now().format("%F")).unwrap();
+	// Deprecated write!(counter_file, "\t\tGenerated by {0} version {1} on {2}\n", program_name, VERSION, Utc::now().format("%F")).unwrap();
 
 	let mut authors_list: String = "\t\tAuthor(s):".to_string();
 
@@ -252,6 +243,19 @@ pub fn generate_counter_header_svg_elements(program_name: &'static str, mut coun
 
 	write!(counter_file, "{0}\n", authors_list).unwrap();
 	write!(counter_file, "\t\tTester(s): Alan Bills, Alan Cannamore, Doug Rimmer\n").unwrap();
+	
+	let mut filename: String = Default::default();
+	
+	if "vasl_vehicle_counters" == program_name {
+		filename = "Vehicle".to_string();
+	} else if "vasl_ordnance_counters" == program_name {
+		filename = "Ordnance".to_string()
+	}
+	
+	if !filename.is_empty() {
+		write!(counter_file, "\t\tCounter data scraped with permission from: https://www.klasm.com/ASL/Listings/{filename}Listings.html\n").unwrap();
+	}
+
 	write!(counter_file, "\t-->\n\n").unwrap();
 
 	embed_fonts_svg(&counter_file);
@@ -261,16 +265,16 @@ pub fn generate_footer_svg(mut counter_file: &std::fs::File) {
 	write!(counter_file, "</svg>\n").unwrap();
 }
 
-fn generate_captured_background_svg(mut counter_file: &std::fs::File, overrides: &Overrides, rectangle_size: u32, inset: u32, delta: u32) {
+fn generate_captured_background_svg(mut counter_file: &std::fs::File, overrides: &Overrides, rectangle_size: f64, inset: f64, delta: f64) {
 	let colors = nationality_to_color(&overrides.captured);
 
-	write!(counter_file, "\t\t<rect x=\"{0}\" y=\"{0}\" rx=\"40\" ry=\"40\" width=\"{1}\" height=\"{1}\" style=\"display:inline;fill:{2};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", inset, rectangle_size, colors[0]).unwrap();
+	write!(counter_file, "\t\t<rect id=\"captured color\" x=\"{0:.2}\" y=\"{0:.2}\" width=\"{1:.2}\" height=\"{1:.2}\" style=\"display:inline;fill:{2};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", inset, rectangle_size, colors[0]).unwrap();
 
 	if UNDEFINED_COLOR != colors[1] {
-		let my_rectangle_size = rectangle_size - (2 * delta);
+		let my_rectangle_size = rectangle_size - (2.0 * delta);
 		let my_inset = inset + delta;
 
-		write!(counter_file, "\t\t\t<rect x=\"{0}\" y=\"{0}\" rx=\"40\" ry=\"40\" width=\"{1}\" height=\"{1}\" style=\"display:inline;fill:{2};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", my_inset, my_rectangle_size, colors[1]).unwrap();
+		write!(counter_file, "\t\t<rect id=\"inner captured color\" x=\"{0:.2}\" y=\"{0:.2}\" width=\"{1:.2}\" height=\"{1:.2}\" style=\"display:inline;fill:{2};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></rect>\n", my_inset, my_rectangle_size, colors[1]).unwrap();
 	}
 }
 
@@ -289,18 +293,11 @@ fn embed_fonts_svg(mut counter_file: &std::fs::File) {
 		write!(counter_file, "\t\t\t\tfont-family: {0};\n", FONT_MAIN).unwrap();
 		write!(counter_file, "\t\t\t\tfont-weight: normal;\n").unwrap();
 		write!(counter_file, "\t\t\t\tfont-style: normal;\n").unwrap();
-		write!(counter_file, "\t\t\t\tsrc:\turl(\"../../../fonts/helvetica_condensed-webfont.woff2\") format(\"woff2\"),\n").unwrap();
-		write!(counter_file, "\t\t\t\t\t\turl(\"../../../fonts/helvetica_condensed-webfont.woff\") format(\"woff\");\n").unwrap();
-		write!(counter_file, "\t\t\t}}\n").unwrap();
-		write!(counter_file, "\t\t\t@font-face {{\n").unwrap();
-		write!(counter_file, "\t\t\t\tfont-family: 'Times-New-Roman';\n").unwrap();
-		write!(counter_file, "\t\t\t\tfont-weight: normal;\n").unwrap();
-		write!(counter_file, "\t\t\t\tfont-style: normal;\n").unwrap();
-		write!(counter_file, "\t\t\t\tsrc:\turl(\"../../../fonts/times-webfont.woff2\") format(\"woff2\"),\n").unwrap();
-		write!(counter_file, "\t\t\t\t\t\turl(\"../../../fonts/times-webfont.woff\") format(\"woff\");\n").unwrap();
+		write!(counter_file, "\t\t\t\tsrc: url(\"../../fonts/NimbusSanL-Reg.woff2\") format(\"woff2\"),\n").unwrap();
+		write!(counter_file, "\t\t\t\tsrc: url(\"../fonts/NimbusSanL-Reg.woff2\") format(\"woff2\"),\n").unwrap();
 		write!(counter_file, "\t\t\t}}\n").unwrap();
 		write!(counter_file, "\t\t</style>\n\n").unwrap();
-		write!(counter_file, "\t</defs>\n").unwrap();
+		write!(counter_file, "\t</defs>\n").unwrap();		
 	} else if EMBED_FONTS {
 		write!(counter_file, "\t<defs>\n").unwrap();
 		write!(counter_file, "\t\t<style> <!-- Embedded Fonts. -->\n").unwrap();
@@ -320,6 +317,7 @@ fn embed_fonts_svg(mut counter_file: &std::fs::File) {
 		write!(counter_file, "\t</defs>\n").unwrap();
 	} else if LINK_FONTS {
 		write!(counter_file, "\t<!-- Linked Fonts. -->\n").unwrap();
-		write!(counter_file, "\t<link xmlns=\"http://ww.w3.org/1999/xhtml\" rel=\"stylesheet\" href=\"../../../fonts.svg\" type=\"text/css\"/>\n\n").unwrap();
+		write!(counter_file, "\t<link xmlns=\"http://ww.w3.org/1999/xhtml\" rel=\"stylesheet\" href=\"../../fonts.svg\" type=\"text/css\"/>\n").unwrap();
+		write!(counter_file, "\t<link xmlns=\"http://ww.w3.org/1999/xhtml\" rel=\"stylesheet\" href=\"../fonts.svg\" type=\"text/css\"/>\n\n").unwrap();
 	}
 }

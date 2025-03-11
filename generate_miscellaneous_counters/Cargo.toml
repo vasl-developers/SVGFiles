@@ -1,0 +1,15 @@
+[package]
+name = "generate_miscellaneous_counters"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+csv.workspace = true
+regex.workspace = true
+serde.workspace = true
+clap = { version = "4.5.31", features = ["derive"] }
+common_functions = { path = "../common_functions" }

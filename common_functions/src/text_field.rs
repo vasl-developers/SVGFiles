@@ -42,10 +42,7 @@ pub const RANGE_FONTS: [[f64; 4]; 8] = [
 	[   0.0,   0.0,   0.0,   0.0 ],	// FONT_ALT_BOTHLINED:	[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]
 ];
 
-#[derive(PartialEq)]
-#[derive(Default)]
-#[derive(Clone)]
-#[derive(Copy)]
+#[derive(PartialEq, Default, Clone, Copy)]
 pub struct FontsObj {
 	pub selected_font: usize,
 	pub fonts: [[f64; 4]; 8],
@@ -79,7 +76,7 @@ impl FontsObj {
 	}
 
 	pub fn adjust_size(&mut self, delta: f64) {
-		self.adjust(delta, FA_SIZE);			
+		self.adjust(delta, FA_SIZE);
 	}
 	
 	pub fn adjust_sup_size(&mut self, delta: f64) {
@@ -111,7 +108,6 @@ impl FontsObj {
 //
 pub const FIXED_BMG_FONT_SIZE: f64 =				 14.4;
 pub const MOTORCYCLE_FONT_SIZE: f64 =				  9.0;
-pub const MGS_SUPERSCRIPT_FONT_SIZE: f64 =			  4.8;
 pub const MGS_SIX_LOBED_ASTERISK_FONT_SIZE: f64 =	  4.2;
 pub const RANGE_FONT_SIZE: f64 =					  8.4;
 pub const SPECIAL_AMMO_FONT_SIZE: f64 =				  9.0;
@@ -179,9 +175,7 @@ pub const CALIBER_FONT_FAMILY_SVG: &str =		formatcp!("<tspan style=\"font-family
 
 pub const UNARMORED_TAG: &str =					"<^>"; // Replace "<^>" with STAR character defined above.
 
-#[derive(PartialEq)]
-#[derive(Default)]
-#[derive(Clone)]
+#[derive(PartialEq, Default, Clone)]
 pub enum NoteAction {
 	#[default]
 	None,
@@ -219,9 +213,7 @@ pub fn string_to_action(value: &String) -> NoteAction {
 	return action;
 }
 
-#[derive(PartialEq)]
-#[derive(Default)]
-#[derive(Clone)]
+#[derive(PartialEq, Default, Clone)]
 pub struct Note {
 	pub action: NoteAction,
 	pub text: String,
@@ -268,9 +260,7 @@ pub trait TextFieldTraits {
 	}		
 }
 
-#[derive(PartialEq)]
-#[derive(Default)]
-#[derive(Clone)]
+#[derive(PartialEq, Default, Clone)]
 pub struct TextField {
 	pub is_set: bool,
 	pub text: String,

@@ -14,9 +14,9 @@ pub const ARM_SVG_HEIGHT: f64 =		12.0;
 pub const ARM_SVG_WIDTH: f64 =		18.0;
 pub const ARM_BOX_X: f64 =			 7.0;
 pub const ARM_BOX_Y: f64 =			 1.0;
-pub const ARM_BOX_SIZE: f64 =		10.0;
-pub const ARM_CIRCLE_RADIUS: f64 =	 5.0;
-pub const ARM_STROKE_WIDTH: f64 =	 0.50;
+pub const ARM_BOX_SIZE: f64 =		10.5;
+pub const ARM_CIRCLE_RADIUS: f64 =	 5.5;
+pub const ARM_STROKE_WIDTH: f64 =	 0.75;
 
 pub const ARM_X_POSITION: f64 = 40.0;
 pub const FAR_Y_POSITION: f64 = 15.0;
@@ -24,8 +24,8 @@ pub const SAR_Y_POSITION: f64 = FAR_Y_POSITION + ARM_SVG_HEIGHT - 1.0;
 pub const RAR_Y_POSITION: f64 = SAR_Y_POSITION + ARM_SVG_HEIGHT - 1.0;
 pub const XAR_Y_POSITION: f64 = RAR_Y_POSITION + ARM_SVG_HEIGHT - 1.0; // -4 size red dot
 
-pub const ARMOR_VALUE_FONT_SIZE: f64 =				8.0;
-pub const ARMOR_VALUE_ALTERNATE_FONT_SIZE: f64 =	7.0;
+pub const ARMOR_VALUE_FONT_SIZE: f64 =				9.5;
+pub const ARMOR_VALUE_ALTERNATE_FONT_SIZE: f64 =	8.5;
 pub const ARMOR_VALUE_NOTE_FONT_SIZE: f64 =			5.0;
 
 #[derive(PartialEq)]
@@ -93,8 +93,8 @@ impl ArmorValue {
 	}
 	
 	pub fn generate_svg_elements(&mut self, mut counter_file: &std::fs::File) {
-		let armor_stroke_color: String = self.stroke_color.to_string();
 		let mut armor_fill_color: String = self.fill_color.to_string();
+		let armor_stroke_color: String = self.stroke_color.to_string();
 		let armor_modifier: String = self.modifier_color.to_string();
 	
 		generate_svg_start_element(counter_file, 1, ARM_X_POSITION, self.y_position, ARM_SVG_WIDTH, ARM_SVG_HEIGHT, &self.comment, "white");
@@ -105,31 +105,67 @@ impl ArmorValue {
 		}
 	
 		let mut font_size = ARMOR_VALUE_FONT_SIZE;
-	
-		if self.value.contains(&STAR.to_string()) {
-			write!(counter_file, "\t\t<text x=\"66%\" y=\"70%\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{0}px;font-weight:{1};font-family:{2};fill:{3};fill-opacity:1;stroke:{4};stroke-width:0.33\">{5}</tspan></text>\n", font_size, ARM_FONT_WEIGHT, FONT_MAIN, armor_fill_color, armor_stroke_color, self.value).unwrap();
+		let mut prefix: String = Default::default();
+		let mut postfix: String = Default::default();
+		
+		if NoteAction::Prefix == self.note.action {
+			if self.note.text.contains(&SIX_LOBED_ASTERISK_UC.to_string()) {
+				font_size = ARMOR_VALUE_NOTE_FONT_SIZE;
+			}
+
+			prefix = format!("<tspan style=\"font-size:{0:.2}px;font-weight:{1};fill:{2};fill-opacity:1;stroke-width:0.2\">{3}</tspan>", font_size, ARM_FONT_WEIGHT, "black", self.note.text);
+		} else if NoteAction::Postfix == self.note.action {
+			if self.note.text.contains(&SIX_LOBED_ASTERISK_UC.to_string()) {
+				font_size = ARMOR_VALUE_NOTE_FONT_SIZE;
+			}
+			
+			postfix = format!("<tspan style=\"font-size:{0:.2}px;font-weight:{1};fill:{2};fill-opacity:1;stroke-width:0.2\">{3}</tspan>", font_size, ARM_FONT_WEIGHT, "black", self.note.text);
+		}
+		
+		font_size = ARMOR_VALUE_FONT_SIZE;
+
+		let mut y_pos: &str = "70";
+		
+		if self.value.contains(&STAR.to_string()) && 1 < self.value.len() {
+			font_size -= 2.0;
 		} else {
-			let mut y_pos: &str = "75";
+			y_pos = "79";
 			
 			if ArmorModifier::None != self.modifier {
 				let value: f64 = self.value.parse::<f64>().unwrap_or(0.0);
 				
 				if value > 10.0 {
 					font_size = ARMOR_VALUE_ALTERNATE_FONT_SIZE;
-					y_pos = "70";
+					y_pos = "75";
+					
+					if ArmorModifier::ExtraInferior == self.modifier {
+						font_size -= 0.5;
+					}
 				}
+			}
+		}
+	
+		if ArmorModifier::None == self.modifier {
+			write!(counter_file, "\t\t<text x=\"66%\" y=\"{0}%\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};font-family:{3};fill:{4};fill-opacity:1;stroke:{5};stroke-width:0.5\">{6}{7}{8}</tspan></text>\n", y_pos, font_size, ARM_FONT_WEIGHT, FONT_MAIN, armor_fill_color, armor_stroke_color, prefix, self.value, postfix).unwrap();
+		} else {
+			if !prefix.is_empty() {
+				write!(counter_file, "\t\t<text x=\"20%\" y=\"{0}%\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-family:{1}\">{2}</tspan></text>\n", y_pos, FONT_MAIN, prefix).unwrap();
 			}
 			
 			write!(counter_file, "\t\t<text x=\"66%\" y=\"{0}%\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};font-family:{3};fill:{4};fill-opacity:1;stroke:none;stroke-width:0.2\">{5}</tspan></text>\n", y_pos, font_size, ARM_FONT_WEIGHT, FONT_MAIN, armor_fill_color, self.value).unwrap();
+			
+			if !postfix.is_empty() {
+				write!(counter_file, "\t\t<text x=\"100%\" y=\"{0}%\" dominant-baseline=\"auto\" text-anchor=\"end\"><tspan style=\"font-family:{1}\">{2}</tspan></text>\n", y_pos, FONT_MAIN, postfix).unwrap();
+			}
 		}
-	
+
 		if self.large_target_circle {
 			write!(counter_file, "\t\t<circle cx=\"66%\" cy=\"50%\" r=\"3.00\" style=\"display:inline;fill:{0};fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:1\"></circle>\n", armor_fill_color).unwrap(); // Red dot
 		}
 	
 		if !self.value.contains(&STAR.to_string()) {
 			if ArmorModifier::Superior == self.modifier {
-				write!(counter_file, "\t\t<rect x=\"{0}\" y=\"{1}\" width=\"{2}\" height=\"{2}\" style=\"display:inline;fill:none;fill-opacity:0.0;stroke:{3};stroke-width:{4};stroke-dasharray:none;stroke-opacity:1\"/> <!-- Superior Turret Armor -->\n", ARM_BOX_X, ARM_BOX_Y, ARM_BOX_SIZE, armor_modifier, ARM_STROKE_WIDTH).unwrap();
+				write!(counter_file, "\t\t<rect x=\"{0:.2}\" y=\"{1:.2}\" width=\"{2:.2}\" height=\"{2:.2}\" style=\"display:inline;fill:none;fill-opacity:0.0;stroke:{3};stroke-width:{4};stroke-dasharray:none;stroke-opacity:1\"/> <!-- Superior Turret Armor -->\n", ARM_BOX_X, ARM_BOX_Y, ARM_BOX_SIZE, armor_modifier, ARM_STROKE_WIDTH).unwrap();
 			} else if ArmorModifier::Inferior == self.modifier {
 				write!(counter_file, "\t\t<circle cx=\"66%\" cy=\"50%\" r=\"{0}\" style=\"display:inline;fill:none;fill-opacity:0.0;stroke:{1};stroke-width:{2};stroke-dasharray:none;stroke-opacity:1\"></circle> <!-- Inferior Turret Armor -->\n", ARM_CIRCLE_RADIUS, armor_modifier, ARM_STROKE_WIDTH).unwrap();
 			} else if ArmorModifier::ExtraInferior == self.modifier {
@@ -138,23 +174,9 @@ impl ArmorValue {
 				write!(counter_file, "\t\t<circle cx=\"66%\" cy=\"50%\" r=\"5\" style=\"display:inline;fill:none;fill-opacity:1;stroke:white;stroke-width:0.5;stroke-dasharray:none;stroke-opacity:1\"></circle>\n").unwrap();
 			}
 		}
-	
-		if NoteAction::Prefix == self.note.action || NoteAction::Postfix == self.note.action {
-			let note_y_position = ARM_SVG_HEIGHT / 2.0;
-				
-			if self.note.text.contains(&SIX_LOBED_ASTERISK_UC.to_string()) {
-				font_size = ARMOR_VALUE_NOTE_FONT_SIZE;
-			}
-			
-			if ArmorModifier::None == self.modifier {
-				write!(counter_file, "\t\t<text x=\"40%\" y=\"{0:.2}\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};fill:black;fill-opacity:1;stroke-width:0.2\">{3}</tspan></text> <!-- note -->\n", note_y_position, font_size, ARM_FONT_WEIGHT, self.note.text).unwrap();
-			} else {
-				write!(counter_file, "\t\t<text x=\"20%\" y=\"{0:.2}\" dominant-baseline=\"auto\" text-anchor=\"middle\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};fill:black;fill-opacity:1;stroke-width:0.2\">{3}</tspan></text> <!-- note -->\n", note_y_position, font_size, ARM_FONT_WEIGHT, self.note.text).unwrap();
-			}
-		}
 
 		write!(counter_file, "\t</svg>\n").unwrap();
-	}	
+	}
 }
 
 #[derive(PartialEq)]

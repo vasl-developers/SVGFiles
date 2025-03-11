@@ -1,5 +1,4 @@
 use std::io::prelude::*;
-use std::env;
 use std::{io};
 use std::io::BufReader;
 use std::fs::File;
@@ -8,6 +7,7 @@ use regex::Regex;
 //
 // Local files.
 //
+use crate::arguments::*;
 use crate::debugging::*;
 use crate::debug_layout;
 use crate::debug_rectangle;
@@ -16,7 +16,7 @@ use crate::text_field::*;
 
 pub fn generate_svg_start_element(mut counter_file: &std::fs::File, depth: usize, x: f64, y: f64, width: f64, height: f64, comment_text: &str, color: &str) {
 	write!(counter_file, "{0}<!-- {1} -->\n", "\t".repeat(depth.try_into().unwrap()), comment_text.to_string()).unwrap();
-	write!(counter_file, "{0}<svg x=\"{1:.2}\" y=\"{2:.2}\" width=\"{3:.2}\" height=\"{4:.2}\">\n", "\t".repeat(depth.try_into().unwrap()), x, y, width, height).unwrap();
+	write!(counter_file, "{0}<svg x=\"{1:.2}\" y=\"{2:.2}\" width=\"{3:.2}\" height=\"{4:.2}\" style=\"overflow:visible\">\n", "\t".repeat(depth.try_into().unwrap()), x, y, width, height).unwrap();
 	debug_layout!(counter_file, depth + 1, color);
 }
 //
@@ -224,11 +224,12 @@ pub fn construct_path(nationality: &String, category: &'static str, destination:
 
 pub fn construct_copy_paths(nationality: &String, category: &'static str, name: &String, destination: &String) -> Vec<String> {
 	let mut result: Vec<std::string::String> = Default::default();
+	let cat: String = if !category.is_empty() { format!("{category}/") } else { Default::default() };
 
-	let mut path = format!("./cached/{nationality}/{category}/{name}.svg");
+	let mut path = format!("./cached/{nationality}/{cat}copy/{name}.svg"); // gemhack refactoring let mut path = format!("./cached/{nationality}/{cat}{name}.svg");
 	result.push(path.clone());	// Source.
 	
-	path = format!("{destination}{nationality}/{category}/{name}.svg"); // destination includes a trailing '/'	
+	path = format!("{destination}{nationality}/{cat}{name}.svg"); // destination includes a trailing '/'	
 	result.push(path.clone());	// Destination.	
 	
 	return result;
@@ -243,10 +244,20 @@ pub fn open_counter_file(path: &String, piece_name: &String) -> io::Result<File>
 	File::create(format!("{path}{piece_name}.svg"))
 }
 
-pub fn copy_counter(category: &'static str, nationality: &String, piece: &String, note_number: &String, destination: &String) -> io::Result<()> {
-	print!("Copying '{0}.svg' ({1}) ...", piece, note_number);
+pub fn copy_counter(category: &'static str, nationality: &String, piece: &String, note_number: &String, args: &Arguments) -> io::Result<()> {
+	if !args.quiet {
+		print!("Copying '{0}.svg' ", piece);
+		
+		if !note_number.is_empty() {
+			print!("({0})", note_number);
+		}
+		
+		print!("...");
+	} else {
+		println!("{0}", piece);
+	}
 
-	let paths: Vec<String> = construct_copy_paths(&nationality, &category, &piece, &destination);
+	let paths: Vec<String> = construct_copy_paths(&nationality, &category, &piece, &args.destination);
 
 	let source_file = match File::open(&paths[0]) {
 		Err(why) => panic!("couldn't open file: {0} {1}", &paths[0], why),
@@ -264,7 +275,9 @@ pub fn copy_counter(category: &'static str, nationality: &String, piece: &String
 
     destination_file.write_all(buffer.as_slice())?;
 
-	println!(" done.");
+	if !args.quiet {
+		println!(" done.");
+	}
 
 	Ok(())
 }
@@ -312,22 +325,6 @@ pub fn strip_html_bold(original: &str) -> std::string::String {
 		result.push_str(right);
 	} else {
 		result = original.to_string();
-	}
-
-	return result;
-}
-
-pub fn get_destination_arg() -> std::string::String {
-	let mut result: String = "./".to_string();
-	let args: Vec<String> = env::args().collect();
-
-	match args.len() {
-		2 => {	// One argument passed, destination directory.
-			result = args[1].clone();
-			result.push_str("/"); // Make sure there's a trailing '/' --- lazy (TODO: for now)
-		},
-		_ => {
-		}
 	}
 
 	return result;

@@ -2,7 +2,7 @@
 // Color choices.
 //
 pub const ALLIED_COLOR: &'static str =			"#82edbd";
-pub const AMERICAN_COLOR: &'static str =		"#cdf000";
+pub const AMERICAN_COLOR: &'static str =		"#cddb42"; // Original: "#cdf000";
 pub const AXIS_COLOR: &'static str =			"#1de256";
 pub const BRITISH_COLOR: &'static str =			"#e5cea0";
 pub const FINNISH_COLOR: &'static str =			"#ced3d3";
@@ -12,7 +12,7 @@ pub const ITALIAN_COLOR: &'static str =			"#a6adb2";
 pub const JAPANESE_COLOR: &'static str =		"#ffdb00";
 pub const RUSSIAN_COLOR: &'static str =			"#d68d1a";
 pub const WAFFEN_SS_COLOR: &'static str =		"#000000";
-pub const LAVENDER_SS_COLOR: &'static str =		"#e6e6fa";
+pub const LAVENDER_SS_COLOR: &'static str =		"#e7cef7";
 pub const SWEDISH_COLOR: &'static str =			"#629dcb";
 pub const BOAT_COLOR: &'static str =			"#91cdf5"; // Same as GERMAN_COLOR
 pub const SHARED_COLOR: &'static str =			"#ffffff";
@@ -47,6 +47,7 @@ pub struct Colors {
 	pub armor_modifier: String,
 	pub manhandling_fill: String,
 	pub unhooking_penalty_color: String,
+	pub malfunction_x: String,
 }
 
 impl Default for Colors {
@@ -73,6 +74,7 @@ impl Default for Colors {
 			manhandling_fill: "black".to_string(),
 			armor_modifier: "black".to_string(),
 			unhooking_penalty_color: "black".to_string(),
+			malfunction_x: "white".to_string(),
 		}
 	}
 }
@@ -190,6 +192,7 @@ pub fn nationality_to_colors(nationality: &String) -> Colors {
 		result.armor_modifier = "white".to_string();
 		result.manhandling_fill = "white".to_string();
 		result.unhooking_penalty_color = "white".to_string();
+		result.malfunction_x = "#b4b4b4".to_string();
 	}
 	
 	return result;

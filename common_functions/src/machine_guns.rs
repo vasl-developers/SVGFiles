@@ -9,7 +9,7 @@ use crate::text_field::*;
 use crate::utils::*;
 
 pub const MGS_FONTS: [[f64; 4]; 8] = [
-	[   8.0,   6.0,  80.0,   6.6 ],	// FONT_NORMAL:			[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]
+	[   9.5,   7.0,  80.0,   6.6 ],	// FONT_NORMAL:			[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]
 	[   0.0,   0.0,   0.0,   0.0 ],	// FONT_UNDERLINED: 	[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]
 	[   0.0,   0.0,   0.0,   0.0 ],	// FONT_OVERLINED:		[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]
 	[   0.0,   0.0,   0.0,   0.0 ],	// FONT_BOTHLINED:		[ FA_SIZE, FA_SUP_SIZE, FA_Y_PERCENTAGE, FA_HEIGHT ]
@@ -51,10 +51,12 @@ impl MachineGuns {
 					let temp: String = extract_from(&entry, MOD_INC_SIZE);
 				
 					self.field.fonts.adjust_size(temp.parse::<f64>().unwrap_or(0.0));
+					self.field.fonts.adjust_sup_size(temp.parse::<f64>().unwrap_or(0.0) / 2.0);
 				} else if entry.contains(MOD_DEC_SIZE) {
 					let temp: String = extract_from(&entry, MOD_DEC_SIZE);
 					
 					self.field.fonts.adjust_size(temp.parse::<f64>().unwrap_or(0.0) * -1.0);
+					self.field.fonts.adjust_sup_size(temp.parse::<f64>().unwrap_or(0.0) * -1.0 / 2.0);
 				} else if is_alternate_location(entry.to_string()) {
 					self.field.alternate_location = entry.to_string();
 				} else {
@@ -109,7 +111,7 @@ impl MachineGuns {
 		self.field.text = convert_text(&self.field.text, SIX_LOBED_ASTERISK_TAG, SIX_LOBED_ASTERISK_MG_SVG);
 
 		if self.field.text.contains("<sup>") {
-			self.field.text = convert_superscripts(&self.field.text, MGS_SUPERSCRIPT_FONT_SIZE);
+			self.field.text = convert_superscripts(&self.field.text, self.field.fonts.sup_size());
 		}
 			
 		self.fixed_bmg = overrides.fixed_bmg;
@@ -162,7 +164,7 @@ impl MachineGuns {
 		self.field.text = convert_text(&self.field.text, SIX_LOBED_ASTERISK_TAG, SIX_LOBED_ASTERISK_MG_SVG);
 
 		if self.field.text.contains("<sup>") {
-			self.field.text = convert_superscripts(&self.field.text, MGS_SUPERSCRIPT_FONT_SIZE);
+			self.field.text = convert_superscripts(&self.field.text, self.field.fonts.sup_size());
 		}
 			
 		self.fixed_bmg = overrides.fixed_bmg;
@@ -183,7 +185,7 @@ impl MachineGuns {
 				let mut fixed_bmg = FIXED_BMG_WHITE_CIRCLE.to_string();
 				fixed_bmg.push_str(&temp);
 				
-				write!(counter_file, "\t\t<text x=\"100%\" y=\"{0}%\" dominant-baseline=\"auto\" text-anchor=\"end\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};font-family:{3};fill:none;fill-opacity:1;stroke-width:0.2\">{4}</tspan></text>\n", self.field.fonts.y_percentage(), self.field.fonts.size(), MGS_FONT_WEIGHT, FONT_MAIN, fixed_bmg).unwrap();
+				write!(counter_file, "\t\t<text x=\"105%\" y=\"{0}%\" dominant-baseline=\"auto\" text-anchor=\"end\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};font-family:{3};fill:none;fill-opacity:1;stroke-width:0.2\">{4}</tspan></text>\n", self.field.fonts.y_percentage(), self.field.fonts.size(), MGS_FONT_WEIGHT, FONT_MAIN, fixed_bmg).unwrap();
 			}
 
 			write!(counter_file, "\t\t<text x=\"100%\" y=\"{0}%\" dominant-baseline=\"auto\" text-anchor=\"end\"><tspan style=\"font-size:{1:.2}px;font-weight:{2};font-family:{3};fill:{4};fill-opacity:1;stroke-width:0.2\">{5}</tspan></text>\n", self.field.fonts.y_percentage(), self.field.fonts.size(), MGS_FONT_WEIGHT, FONT_MAIN, self.field.color, self.field.text).unwrap();

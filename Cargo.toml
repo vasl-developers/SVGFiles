@@ -1,12 +1,14 @@
 [workspace]
 members = [
 	"common_functions",
-	"generate_ordnance_counters",
-	"generate_vehicle_counters",
-	"generate_landing_craft_counters",
 	"generate_aircraft_counters",
+	"generate_ordnance_counters",
+	"generate_landing_craft_counters",
+	"generate_miscellaneous_counters",
 	"generate_multiman_counters",
-	"generate_singleman_counters"
+	"generate_singleman_counters",
+	"generate_sw_counters",
+	"generate_vehicle_counters",
 ]
 resolver = "2"
 
