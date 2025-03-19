@@ -8,7 +8,7 @@ pub const LINK_FONTS: bool =		false;
 pub const CREATE_BEVEL: bool =		true;
 pub const INCLUDE_IMAGES: bool =	true;
 pub const CREATE_WRECKS: bool =		false;
-pub const CREATE_MALF_SIDE: bool =	false;
+pub const CREATE_MALF_SIDE: bool =	true;
 
 pub const GUN_COLUMN_X_POSITION: f64 =	 		 3.0;
 pub const GUN_COLUMN_Y_POSITION: f64 =			57.0;

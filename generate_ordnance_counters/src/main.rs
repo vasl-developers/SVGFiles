@@ -33,8 +33,8 @@ struct Record {
 	common: CommonRecord,
 	gun_type: TextField,
 	movement: OrdnanceMovementValues,
-	// TODO: CREATE_MALF_SIDE NOT YET? special: Special,
-	// TODO: CREATE_MALF_SIDE NOT YET? repair_or_disable: RepairValues,
+	// TODO: NOT YET? special: Special, // Details for malfunction side.
+	repair_or_disable: RepairValues,
 	limbered: bool,
 	limbered_data: String,
 }
@@ -127,7 +127,7 @@ impl Record {
 	}
 }
 
-fn generate_gun_type(mut counter_file: &std::fs::File, gun_type: &TextField, overrides: &Overrides) {
+fn generate_gun_type(mut output: &std::fs::File, gun_type: &TextField, overrides: &Overrides) {
 	let mut gt: String = gun_type.text.clone();
 
 	if !overrides.gt.is_empty() {
@@ -135,69 +135,78 @@ fn generate_gun_type(mut counter_file: &std::fs::File, gun_type: &TextField, ove
 	}
 
 	if !gt.is_empty() {
-		generate_svg_start_element(counter_file, 1, 27.00, 0.00, 30.00, 11.00, "Gun Type", &"cyan".to_string());
-		write!(counter_file, "\t\t<text x=\"100%\" y=\"100%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2}\">{3}</text>\n", GT_FONT_SIZE, FONT_MAIN, gun_type.color, gt).unwrap();
-		write!(counter_file, "\t</svg>\n").unwrap();
+		generate_svg_start_element(output, 1, 27.00, 0.00, 30.00, 11.00, "Gun Type", &"cyan".to_string());
+		write!(output, "\t\t<text x=\"100%\" y=\"100%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2}\">{3}</text>\n", GT_FONT_SIZE, FONT_MAIN, gun_type.color, gt).unwrap();
+		write!(output, "\t</svg>\n").unwrap();
 	}
 }
 
-fn generate_counter_front(mut counter_file: &std::fs::File, path: &String, unit_depiction: &String, record: &Record) {
-	generate_counter_background_svg(counter_file, 60, &record.common.colors, &record.common.overrides);
+fn generate_counter_front(mut output: &std::fs::File, path: &String, unit_depiction: &String, record: &Record) {
+	generate_counter_background_svg(output, 60, &record.common.colors, &record.common.overrides);
 	
 	if !record.common.overrides.ma.ignore {
-		record.common.turret.generate_svg_elements(&counter_file);
+		record.common.turret.generate_svg_elements(&output);
 	}
 	
-	generate_unit_depiction_svg(counter_file, &path, &unit_depiction, &record.common.note, &record.common.svg_image_transform, true, &record.common.name, record.common.display_name, &record.common.colors, &record.args);
-	generate_debug_working_area_svg(&counter_file);
+	generate_unit_depiction_svg(output, &path, &unit_depiction, &record.common.note, &record.common.svg_image_transform, true, &record.common.name, record.common.display_name, &record.common.colors, &record.args);
+	generate_debug_working_area_svg(&output);
 
 	if !record.common.overrides.ma.ignore {
-		generate_debug_gun_line_svg(counter_file);
+		generate_debug_gun_line_svg(output);
 	
-		let mut y_position = generate_gun_caliber_line(&counter_file, &record.common);
+		let mut y_position = generate_gun_caliber_line(&output, &record.common);
 		
-		y_position -= generate_malfunction_elements(&counter_file, &record.common.malfunction, y_position);
+		y_position -= generate_malfunction_elements(&output, &record.common.malfunction, y_position);
 
 		if !record.common.ma.rof.text.is_empty() {
-			generate_rof_element(&counter_file, &record.common.ma.rof, y_position, &record.common.ma.color, false);
+			generate_rof_element(&output, &record.common.ma.rof, y_position, &record.common.ma.color, false);
 		}
-		
-		generate_range_and_special_ammunition_elements(&counter_file, &record.common.ma);
+
+		generate_range_and_special_ammunition_elements(&output, &record.common.ma);
 
 		if !record.common.ma.range2.text.is_empty() {
-			generate_range_element(&counter_file, &record.common.ma.range2, true, y_position, "Range2");
+			generate_range_element(&output, &record.common.ma.range2, true, y_position, "Range2");
 		}
-		
-		generate_gun_type(&counter_file, &record.gun_type, &record.common.overrides);
+
+		generate_gun_type(&output, &record.gun_type, &record.common.overrides);
 	}
 
 	if 0 != record.movement.manhandling_number.text.len() {
-		generate_manhandling_number(&counter_file, &record.movement);
+		generate_manhandling_number_for_counter_front(&output, &record.movement);
 	}
 
 	if record.limbered {
-		write!(counter_file, "\t<text x=\"{0}\" y=\"8.00\" text-anchor=\"start\" style=\"font-size:{1:.2}px;{FONT_WEIGHT_NORM};font-family:{2};fill:{3}\">Limbered</text>\n", GUN_COLUMN_X_POSITION, LIMBERED_FONT_SIZE, FONT_MAIN, record.common.ma.color).unwrap();
+		write!(output, "\t<text x=\"{0}\" y=\"8.00\" text-anchor=\"start\" style=\"font-size:{1:.2}px;{FONT_WEIGHT_NORM};font-family:{2};fill:{3}\">Limbered</text>\n", GUN_COLUMN_X_POSITION, LIMBERED_FONT_SIZE, FONT_MAIN, record.common.ma.color).unwrap();
 	}
 }
-/* TODO: CREATE_MALFUNCTION_SIDE NOT YET?
-fn generate_counter_back(mut counter_file: &std::fs::File, path: &String, unit_depiction: &String, record: &Record) {
-	generate_counter_background(counter_file, &record.common.colors, &record.common.overrides);
 
-	write!(counter_file, "\t\t<text x=\"50%\" y=\"50%\" dominant-baseline=\"Central\" text-anchor=\"middle\" style=\"font-size:1200px;{FONT_WEIGHT_BOLD};font-family:{0};fill:{1}\">✕</text>\n", FONT_MAIN, WHITE.to_string()).unwrap(); // Malfunctioned
+fn generate_counter_back(mut output: &std::fs::File, path: &String, unit_depiction: &String, record: &Record) {
+	generate_counter_background_svg(output, 60, &record.common.colors, &record.common.overrides);
 
+	write!(output, "\t<line x1=\"10\" y1=\"10\" x2=\"50\" y2=\"50\" style=\"stroke:{0}; stroke-width:3.00\"/>\n", record.common.colors.malfunction_x).unwrap();
+	write!(output, "\t<line x1=\"10\" y1=\"50\" x2=\"50\" y2=\"10\" style=\"stroke:{0}; stroke-width:3.00\"/>\n", record.common.colors.malfunction_x).unwrap();
+		
 	if !record.repair_or_disable.repair.text.is_empty() {
-		write!(counter_file, "\t\t<text x=\"50\" y=\"158\" text-anchor=\"start\" style=\"font-size:120pt;font-family:{0};fill:{1}\">R{2}</text>\n", FONT_MAIN, record.repair_or_disable.repair.color, record.repair_or_disable.repair.text).unwrap();
+		write!(output, "\t<text x=\"3.00\" y=\"11.00\" text-anchor=\"start\" style=\"font-size:8pt;font-family:{0};fill:{1}\">R{2}</text>\n", FONT_MAIN, record.repair_or_disable.repair.color, record.repair_or_disable.repair.text).unwrap();
 	}
 
 	if !record.repair_or_disable.disable.text.is_empty() {
-		write!(counter_file, "\t\t<text x=\"954\" y=\"950\" text-anchor=\"end\" style=\"font-size:120pt;font-family:{0};fill:{1}\">X{2}</text>\n", FONT_MAIN, record.repair_or_disable.disable.color, record.repair_or_disable.disable.text).unwrap();
+		write!(output, "\t<text x=\"57.00\" y=\"57.00\" text-anchor=\"end\" style=\"font-size:8pt;font-family:{0};fill:{1}\">X{2}</text>\n", FONT_MAIN, record.repair_or_disable.disable.color, record.repair_or_disable.disable.text).unwrap();
 	}
 
-	record.special.generate_svg(counter_file);	// Handle all the "special" text including "Limbered".
+	// TODO not yet? record.special.generate_svg(output);	// Handle all the "special" text including "Limbered".
 
-	generate_unit_depiction(counter_file, &path, &unit_depiction, &record.common.note, false, &record.common.name, &record.common.colors);
+	if 0 != record.movement.manhandling_number.text.len() {
+		generate_manhandling_number_for_counter_back(&output, &record.movement);
+	}
+	
+	if record.limbered {
+		write!(output, "\t<text x=\"57.00\" y=\"8.00\" text-anchor=\"end\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_NORM};font-family:{1};fill:{2}\">Limbered</text>\n", LIMBERED_FONT_SIZE, FONT_MAIN, record.common.ma.color).unwrap();
+	}
+	
+	generate_unit_depiction_svg(output, &path, &unit_depiction, &record.common.note, &record.common.svg_image_transform, false, &record.common.name, record.common.display_name, &record.common.colors, &record.args);
 }
-TODO: CREATE_MALFUNCTION_SIDE NOT YET? */
+
 fn extract_nationality(source: &String, nationality: &String) -> std::string::String {
 	let mut result = (&source[0..2]).to_string();
 
@@ -229,23 +238,22 @@ fn generate_counters(record: &Record) {
 	//
 	// Create the front counter file.
 	//
-	let counter_file = match open_counter_file(&path, &piece) {
+	let mut output = match open_counter_file(&path, &piece) {
 		Err(why) => panic!("couldn't create file: {0} {1}", piece, why),
-		Ok(counter_file) => counter_file,
+		Ok(output) => output,
 	};
 
-	generate_counter_header_svg_elements("vasl_ordnance_counters", &counter_file, 60, &name, &record.common.note, &record.common.comments, &record.common.version);
-	generate_counter_front(&counter_file, &path, &unit_depiction, &record);
-	generate_footer_svg(&counter_file);
+	generate_counter_header_svg_elements("vasl_ordnance_counters", &output, 60, &name, &record.common.note, &record.common.comments, &record.common.version);
+	generate_counter_front(&output, &path, &unit_depiction, &record);
+	generate_footer_svg(&output);
 
-	drop(counter_file);
+	drop(output);
 
-/* TODO: NOT YET?
-	if CREATE_MALFUNCTION_SIDE && !record.common.overrides.ignore_rev {
+	if CREATE_MALF_SIDE /* TODO: NOT YET? && !record.common.overrides.ignore_rev*/ {
 		//
 		// Create the back counter file.
 		//
-		piece = record.common.piece_back.clone();
+		piece = record.common.piece_front.clone();
 
 		if record.limbered {
 			piece.push_str("-l");
@@ -253,29 +261,34 @@ fn generate_counters(record: &Record) {
 		}
 
 		piece.push_str("b");
-
+		
 		name = record.common.name.clone();
 		name.push_str(" (Malfunctioned)");
 
-		counter_file = match open_counter_file(&path, &piece) {
+		if !record.args.quiet {
+			print!("Generating '{0}.svg' ({1}) ...", piece, record.common.note);
+		} else {
+			println!("{0}", piece);
+		}
+	
+		output = match open_counter_file(&path, &piece) {
 			Err(why) => panic!("couldn't create file: {0} {1}", piece, why),
-			Ok(counter_file) => counter_file,
+			Ok(output) => output,
 		};
 
-		generate_header("vasl_gun_counters", &counter_file, &record.common.note, &name, &record.common.comments, &record.common.version);
-		generate_counter_back(&counter_file, &path, &unit_depiction, &record);
-		generate_footer(&counter_file);
+		generate_counter_header_svg_elements("vasl_gun_counters", &output, 60, &name, &record.common.note, &record.common.comments, &record.common.version);
+		generate_counter_back(&output, &path, &unit_depiction, &record);
+		generate_footer_svg(&output);
 
-		drop(counter_file);
+		drop(output);
 	}
-TODO: NOT YET? */
 
 	if !record.args.quiet {
 		println!(" done.");
 	}
 }
 
-pub fn sanitize_repair_numbers(source: &String, special_repair: &String, colors: &Colors) -> RepairValues {
+pub fn sanitize_repair_numbers(source: &String, /* TODO: CREATE_MALF_SIDE NOT YET? special_repair: &String,*/ colors: &Colors) -> RepairValues {
 	let mut result: RepairValues = Default::default();
 	let mut repair: &str = "1";
 	let mut disable: &str = "6";
@@ -284,11 +297,11 @@ pub fn sanitize_repair_numbers(source: &String, special_repair: &String, colors:
 		(repair, disable) = source.split_once('/').unwrap();
 	}
 
-	if !special_repair.is_empty() {
-		result.repair.text = special_repair.to_string();
-	} else {
+	// TODO: NOT YET? if !special_repair.is_empty() {
+	// TODO: NOT YET? 	result.repair.text = special_repair.to_string();
+	// TODO: NOT YET? } else {
 		result.repair.text = repair.to_string();
-	}
+	// TODO: NOT YET? }
 
 	result.repair.color = colors.text.to_string();
 
@@ -359,7 +372,7 @@ impl SpreadsheetRecord {
 		
 		// TODO: CREATE_MALF_SIDE NOT YET? result.special.initialize(&self.special, &result.common.overrides, result.limbered, &result.common.colors);
 	
-		// TODO: CREATE_MALF_SIDE NOT YET? result.repair_or_disable = sanitize_repair_numbers(&self.r_x, &result.special.repair, &result.common.colors);
+		result.repair_or_disable = sanitize_repair_numbers(&self.r_x, /* TODO: CREATE_MALF_SIDE NOT YET? &result.special.repair,*/ &result.common.colors);
 	
 		result.limbered_data = self.limbered.clone();
 	

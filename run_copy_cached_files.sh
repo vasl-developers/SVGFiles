@@ -1,14 +1,18 @@
 #!/bin/bash
 
+export CATEGORY="all"
 export DESTINATION="./images"
 export NATIONALITY=
 export QUIET_ARG=
 export DIRS=
 export QUIET="no"
 
-while getopts D:N:q option
+while getopts C:D:N:q option
 do
 	case "${option}" in
+		C)
+			CATEGORY="${OPTARG}"
+			;;
 		D)
 			DESTINATION="${OPTARG}"
 			;;
@@ -21,11 +25,6 @@ do
 			;;
 	esac
 done
-
-if [ "${QUIET}" = "no" ]
-then
-	date
-fi
 
 for n in ${NATIONALITY}
 do
@@ -54,12 +53,14 @@ do
 			DIRS=("ja");;
 		"russian")
 			DIRS=("ru" "pa");;
+		"swedish")
+			DIRS=("sv");;			
 		"un")
 			DIRS=("un" "sk");;
 	esac
 
 	for d in "${DIRS[@]}"; do	
-		if [ -d "cached/${d}/gun/svg" ]; then
+		if [[ -d "cached/${d}/gun/svg" && ( "${CATEGORY}" = "all" || "${CATEGORY}" = "gun" ) ]]; then
 			if [ "${QUIET}" = "no" ]
 			then
 				echo "Copying ${d} ordnance depiction files"
@@ -68,16 +69,16 @@ do
 			cp -r cached/${d}/gun/svg ${DESTINATION}/${d}/gun
 		fi
 		
-		if [ -d "cached/${d}/svg" ]; then
+		if [[ -d "cached/${d}/svg" && ( "${CATEGORY}" = "all" || "${CATEGORY}" = "inf" ) ]]; then
 			if [ "${QUIET}" = "no" ]
 			then
-				echo "Copying ${d} unit depiction files"
+				echo "Copying ${d} infantry unit depiction files"
 			fi
 			
 			cp -r cached/${d}/svg ${DESTINATION}/${d}
 		fi
 
-		if [ -d "cached/${d}/veh/svg" ]; then
+		if [[ -d "cached/${d}/veh/svg" && ( "${CATEGORY}" = "all" || "${CATEGORY}" = "veh" ) ]]; then
 			if [ "${QUIET}" = "no" ]
 			then
 				echo "Copying ${d} vehicle depiction files"
@@ -87,8 +88,3 @@ do
 		fi				
 	done
 done
-	
-if [ "${QUIET}" = "no" ]
-then
-	date
-fi

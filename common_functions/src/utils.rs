@@ -226,7 +226,7 @@ pub fn construct_copy_paths(nationality: &String, category: &'static str, name: 
 	let mut result: Vec<std::string::String> = Default::default();
 	let cat: String = if !category.is_empty() { format!("{category}/") } else { Default::default() };
 
-	let mut path = format!("./cached/{nationality}/{cat}copy/{name}.svg"); // gemhack refactoring let mut path = format!("./cached/{nationality}/{cat}{name}.svg");
+	let mut path = format!("./cached/{nationality}/{cat}copy/{name}.svg");
 	result.push(path.clone());	// Source.
 	
 	path = format!("{destination}{nationality}/{cat}{name}.svg"); // destination includes a trailing '/'	

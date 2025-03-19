@@ -4,7 +4,6 @@ export BASH_ARGS=
 export RUST_ARGS=
 export DESTINATION="./images"
 export NATIONALITY=
-export QUIET="no"
 
 while getopts dD:N:q option
 do
@@ -22,18 +21,12 @@ do
 		q)
 			BASH_ARGS="${BASH_ARGS} -q"
 			RUST_ARGS="${RUST_ARGS} --quiet"
-			QUIET="yes"
 			;;
 	esac
 done
 
-BASH_ARGS="-D ${DESTINATION} -N ${NATIONALITY} ${BASH_ARGS}"
+BASH_ARGS="-D ${DESTINATION} -N ${NATIONALITY} ${BASH_ARGS} -C all"
 RUST_ARGS="--destination ${DESTINATION} ${RUST_ARGS}"
-
-if [ "${QUIET}" = "no" ]
-then
-	date
-fi
 
 for n in ${NATIONALITY}
 do
@@ -74,8 +67,3 @@ do
 		cargo run --bin generate_sw_counters -- ${RUST_ARGS} < ${CSV_FILE}
 	fi	
 done
-	
-if [ "${QUIET}" = "no" ]
-then
-	date
-fi

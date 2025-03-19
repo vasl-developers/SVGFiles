@@ -441,8 +441,10 @@ pub struct RepairValues {
 	pub repair: TextField,
 	pub disable: TextField,
 }
-
-pub fn generate_manhandling_number(mut counter_file: &std::fs::File, movement: &OrdnanceMovementValues) {
+//
+// TODO: refactor generate_manhandling_number_for_counter_front()/generate_manhandling_number_for_counter_back()?
+//
+pub fn generate_manhandling_number_for_counter_front(mut counter_file: &std::fs::File, movement: &OrdnanceMovementValues) {
 	let manhandling_number_color: String = movement.manhandling_number.color.to_string();
 
 	if 1 != movement.target_size && !movement.unhooking_penalty {
@@ -468,6 +470,46 @@ pub fn generate_manhandling_number(mut counter_file: &std::fs::File, movement: &
 		write!(counter_file, "\t</svg>\n").unwrap();
 
 		generate_svg_start_element(counter_file, 1, 40.2, 13.8, 10.2, 10.2, "Manhandling", &"yellow".to_string());
+
+		if NoteAction::Infix == movement.manhandling_number.note.action {
+			write!(counter_file, "\t\t<text x=\"80%\" y=\"64%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">M</text>\n", MH_M_FONT_SIZE, FONT_MAIN, movement.color).unwrap();
+			write!(counter_file, "\t\t<text x=\"80%\" y=\"143%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">{3}</text>\n", MH_NOTE_FONT_SIZE, FONT_MAIN, movement.color, movement.manhandling_number.note.text).unwrap();
+		} else if movement.unhooking_penalty || 1 == movement.target_size {
+			write!(counter_file, "\t\t<text x=\"75%\" y=\"80%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">M</text>\n", movement.manhandling_number.fonts.size(), FONT_MAIN, movement.color).unwrap();
+		} else {
+			write!(counter_file, "\t\t<text x=\"100%\" y=\"80%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">M</text>\n", movement.manhandling_number.fonts.size(), FONT_MAIN, movement.color).unwrap();
+		}
+
+		write!(counter_file, "\t</svg>\n").unwrap();
+	}
+}
+
+pub fn generate_manhandling_number_for_counter_back(mut counter_file: &std::fs::File, movement: &OrdnanceMovementValues) {
+	let manhandling_number_color: String = movement.manhandling_number.color.to_string();
+
+	if 1 != movement.target_size && !movement.unhooking_penalty {
+		write!(counter_file, "\t<text x=\"57.00\" y=\"41.00\" dominant-baseline=\"auto\" text-anchor=\"end\"><tspan style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">M</tspan><tspan style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{3};fill-opacity:1\">{4}</tspan></text>\n", movement.manhandling_number.fonts.size(), FONT_MAIN, movement.color, manhandling_number_color, movement.manhandling_number.text).unwrap();
+	} else {
+		let mut font_size = movement.manhandling_number.fonts.size();
+		
+		if 2 <= movement.manhandling_number.text.len() {
+			font_size -= 1.2;
+		}
+		
+		generate_svg_start_element(counter_file, 1, 48.00, 36.00, 9.00, 9.00, "Manhandling #", &"orange".to_string());
+
+		if 1 == movement.target_size {
+			write!(counter_file, "\t\t<circle cx=\"50%\" cy=\"50%\" r=\"4.20\" style=\"display:inline;fill:white;fill-opacity:1;stroke:none;stroke-width:0.36;stroke-dasharray:none;stroke-opacity:1\"></circle>\n").unwrap();
+		}
+
+		if movement.unhooking_penalty {
+			write!(counter_file, "\t\t<circle cx=\"50%\" cy=\"50%\" r=\"4.20\" style=\"display:inline;fill:none;fill-opacity:1;stroke:{0};stroke-width:0.36;stroke-dasharray:none;stroke-opacity:1\"></circle>\n", movement.unhooking_penalty_color.to_string()).unwrap();
+		}
+
+		write!(counter_file, "\t\t<text x=\"50%\" y=\"80%\" dominant-baseline=\"auto\" text-anchor=\"middle\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">{3}</text>\n", font_size, FONT_MAIN, manhandling_number_color, movement.manhandling_number.text).unwrap();
+		write!(counter_file, "\t</svg>\n").unwrap();
+
+		generate_svg_start_element(counter_file, 1, 40.20, 35.40, 10.20, 10.20, "Manhandling", &"yellow".to_string());
 
 		if NoteAction::Infix == movement.manhandling_number.note.action {
 			write!(counter_file, "\t\t<text x=\"80%\" y=\"64%\" dominant-baseline=\"auto\" text-anchor=\"end\" style=\"font-size:{0:.2}px;{FONT_WEIGHT_BOLD};font-family:{1};fill:{2};fill-opacity:1\">M</text>\n", MH_M_FONT_SIZE, FONT_MAIN, movement.color).unwrap();

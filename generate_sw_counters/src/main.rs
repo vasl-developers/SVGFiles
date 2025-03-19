@@ -202,10 +202,6 @@ impl Record {
 		} else if 5 < self.counter.len(){
 			size = 10;
 		}
-
-		if "X" == self.breakdown {
-			self.generate_counter_malfunction_x_svg_elements(output);
-		}
 		
 		write!(output, "\t<text x=\"44.5\" y=\"11\" style=\"font-size:{size}px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-anchor:end;fill:{0};fill-opacity:1;font-family:{FONT_MAIN}\">{1}</text>\n", self.colors.text, self.counter).unwrap();
 		
@@ -318,10 +314,10 @@ impl Record {
 		
 		write!(output, "\t<text x=\"50%\" y=\"10.00\" style=\"font-size:7px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">Place MPh</text>\n").unwrap();
 		write!(output, "\t<text x=\"50%\" y=\"17.00\" style=\"font-size:7px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">Attack AFPh</text>\n").unwrap();
-		write!(output, "\t<text<line x1=\"3\" y1=\"19\" x2=\"45\" y2=\"19\" style=\"stroke:{color};stroke-width:1.00\"/>\n").unwrap();
+		write!(output, "\t<line x1=\"3\" y1=\"19\" x2=\"45\" y2=\"19\" style=\"stroke:{color};stroke-width:1.00\"/>\n").unwrap();
 		write!(output, "\t<text x=\"50%\" y=\"26.00\" style=\"font-size:7px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">Thrown</text>\n").unwrap();
 		write!(output, "\t<text x=\"50%\" y=\"33.00\" style=\"font-size:7px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">+2/+3</text>\n").unwrap();
-		write!(output, "\t<text<line x1=\"3\" y1=\"35\" x2=\"45\" y2=\"35\" style=\"stroke:{color};stroke-width:1.00\"/>\n").unwrap();
+		write!(output, "\t<line x1=\"3\" y1=\"35\" x2=\"45\" y2=\"35\" style=\"stroke:{color};stroke-width:1.00\"/>\n").unwrap();
 		write!(output, "\t<text x=\"50%\" y=\"42.00\" style=\"font-size:7px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">Set: 36 FP</text>\n").unwrap();		
 	}
 	
@@ -330,7 +326,7 @@ impl Record {
 		
 		write!(output, "\t<text x=\"50%\" y=\"12.00\" style=\"font-size:8.5px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">No AFPh</text>\n").unwrap();
 		write!(output, "\t<text x=\"50%\" y=\"20.00\" style=\"font-size:8.5px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">penalty</text>\n").unwrap();
-		write!(output, "\t<text<line x1=\"3\" y1=\"24\" x2=\"45\" y2=\"24\" style=\"stroke:{color};stroke-width:1.00\"/>\n").unwrap();
+		write!(output, "\t<line x1=\"3\" y1=\"24\" x2=\"45\" y2=\"24\" style=\"stroke:{color};stroke-width:1.00\"/>\n").unwrap();
 		write!(output, "\t<text x=\"50%\" y=\"34.00\" style=\"font-size:8.5px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">-1 DRM</text>\n").unwrap();
 		write!(output, "\t<text x=\"50%\" y=\"42.00\" style=\"font-size:8.5px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">vs Owner</text>\n").unwrap();			
 	}
@@ -365,7 +361,7 @@ impl Record {
 		let color = &self.colors.text;
 		
 		write!(output, "\t<text x=\"50%\" y=\"12.00\" style=\"font-size:8.5px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">No Move</text>\n").unwrap();
-		write!(output, "\t<text<line x1=\"3\" y1=\"16\" x2=\"45\" y2=\"16\" style=\"stroke:{color};stroke-width:1.00\"/>\n").unwrap();
+		write!(output, "\t<line x1=\"3\" y1=\"16\" x2=\"45\" y2=\"16\" style=\"stroke:{color};stroke-width:1.00\"/>\n").unwrap();
 		write!(output, "\t<text x=\"50%\" y=\"25.00\" style=\"font-size:8.5px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">Security</text>\n").unwrap();
 		write!(output, "\t<text x=\"50%\" y=\"35.00\" style=\"font-size:8.5px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">Area 2 DR</text>\n").unwrap();
 		write!(output, "\t<text x=\"50%\" y=\"44.00\" style=\"font-size:8.5px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-anchor:middle;fill:{color};fill-opacity:1;font-family:{FONT_MAIN}\">Removes</text>\n").unwrap();	
@@ -458,12 +454,14 @@ impl Record {
 		}
 		
 		if self.counter.contains("dmMTR") {
-			write!(output, "\t<text x=\"46.0\" y=\"43.5\" style=\"font-size:10px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-anchor:end;fill:{0};fill-opacity:1;font-family:{FONT_MAIN}\">{1}</text>\n", self.colors.text, value).unwrap();
+			write!(output, "\t<text x=\"45.0\" y=\"43.5\" style=\"font-size:8px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-anchor:end;fill:{0};fill-opacity:1;font-family:{FONT_MAIN}\">{1}</text>\n", self.colors.text, value).unwrap();
 		} else {
 			write!(output, "\t<text x=\"2.0\" y=\"43.5\" style=\"font-size:10px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-anchor:start;fill:{0};fill-opacity:1;font-family:{FONT_MAIN}\">{1}</text>\n", self.colors.text, value).unwrap();
 		}
 		
-		write!(output, "\t<text x=\"46\" y=\"43.5\" style=\"font-size:8px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-anchor:end;fill:{0};fill-opacity:1;font-family:{FONT_MAIN}\">{1}</text>\n", self.colors.text, self.range).unwrap();
+		if !self.range.is_empty() {
+			write!(output, "\t<text x=\"46\" y=\"43.5\" style=\"font-size:8px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-anchor:end;fill:{0};fill-opacity:1;font-family:{FONT_MAIN}\">{1}</text>\n", self.colors.text, self.range).unwrap();
+		}
 	}
 	
 	fn generate_inf_svg_elements(&mut self, mut output: &std::fs::File) {
@@ -515,7 +513,7 @@ impl Record {
 				//
 				// Where <XXX> is <AAA>[@<BBB>]* or <AAA>@<BBB>[@<CCC>]
 				//
-				// Where <XXX> is the text to display, <BBB> is the location to display it at, and <CCC> is either "@sz-<XX>" or "@sz+<XX>" to modify the font size.
+				// Where <AAA> is the text to display, <BBB> is the location to display it at (with 'S'/'M'/'E' prefix for text alignment), and <CCC> is either "@sz-<XX>" or "@sz+<XX>" to modify the font size.
 				//
 				if entry.contains(MOD_DELIMITER2) {
 					let sub_entries: Vec<std::string::String> = extract_vector(&entry.to_string(), MOD_DELIMITER2);
@@ -646,6 +644,11 @@ fn generate_svg_counter(record: &mut Record) {
 }
 
 fn generate_sw_counter_svg_elements(output: &std::fs::File, record: &mut Record, path: &String) {
+	
+	if "X" == record.breakdown {
+		record.generate_counter_malfunction_x_svg_elements(output);
+	}
+
 	record.generate_unit_depiction_svg_elements(&output, &path);
 	record.generate_counter_svg_elements(&output);
 }

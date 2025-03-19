@@ -3,7 +3,7 @@
 export BASH_ARGS=
 export RUST_ARGS=
 export DESTINATION="./images"
-export NATIONALITY=
+export NATIONALITY="allied american axis british chinese communist finnish french german italian japanese russian swedish un"
 
 while getopts dD:N:q option
 do
@@ -25,14 +25,12 @@ do
 	esac
 done
 
-BASH_ARGS="-D ${DESTINATION} -N ${NATIONALITY} ${BASH_ARGS}"
+BASH_ARGS="-D ${DESTINATION} ${BASH_ARGS}"
 RUST_ARGS="--destination ${DESTINATION} ${RUST_ARGS}"
-
-date
 
 for n in ${NATIONALITY}
 do
-	bash run_copy_cached_files.sh ${BASH_ARGS}
+	bash run_copy_cached_files.sh ${BASH_ARGS} -N ${n} -C inf
 
 	CSV_FILE=data/${n}_smc.csv
 	if [ -f "${CSV_FILE}" ]
@@ -55,5 +53,3 @@ do
 		cargo run --bin generate_sw_counters -- ${RUST_ARGS} < ${CSV_FILE}
 	fi	
 done
-	
-date

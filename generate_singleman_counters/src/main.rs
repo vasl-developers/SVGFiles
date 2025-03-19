@@ -134,6 +134,7 @@ impl Record {
 			row2 = 41;
 			font_size = 9;			
 
+			write!(output, "\t<image id=\"Silhouettes\" x=\"0\" y=\"0\" width=\"60\" height=\"60\" preserveAspectRatio=\"xMidYMid meet\" transform=\"scale(0.80)\" style=\"opacity:{0:.2}\" href=\"svg/{1}Sniper.png\" xlink:href=\"svg/{1}Sniper.png\"/>\n", self.overrides.opacity, self.nationality).unwrap();
 			write!(output, "\t<path id=\"Hexagon\" style=\"fill:none;stroke:{0};stroke-width:1.5;stroke-opacity:{1:.2}\" transform=\"scale(0.80)\" d=\"M 43.045125,7.4246216 56.100305,30.06722 43.01883,52.694636 16.882175,52.679455 3.8269945,30.036857 16.90847,7.4094401 Z\"/>\n", self.colors.text, self.overrides.opacity).unwrap();
 		}
 

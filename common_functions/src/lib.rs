@@ -132,6 +132,7 @@ pub fn generate_counter_background_svg(mut counter_file: &std::fs::File, size: u
 
 pub fn generate_unit_depiction_svg(mut counter_file: &std::fs::File, root_path: &String, filename: &String, note: &String, svg_transform: &String, front: bool, name: &String, display_name: bool, colors: &Colors, args: &Arguments) {
 	if INCLUDE_IMAGES {
+		let mut found = false;
 		let path_prefix = "svg/";
 		let file_type_svg = ".svg";
 		let file_type_png = ".png";
@@ -164,11 +165,17 @@ pub fn generate_unit_depiction_svg(mut counter_file: &std::fs::File, root_path: 
 
 				write!(counter_file, "\t<!-- Unit depiction -->\n").unwrap();
 				write!(counter_file, "\t<image x=\"0\" y=\"0\" width=\"60\" height=\"60\" preserveAspectRatio=\"xMidYMid meet\" transform=\"{0}\" href=\"{1}\" xlink:href=\"{1}\"/>\n", transform, path).unwrap();
+				found = true;
 				break;	// Our work here is done.
 			}
 		}
+
+		if false == found {
+			panic!("generate_unit_depiction_svg() {filename} not found!")
+		}
 	}
 
+	
 	if args.notes {
 		generate_debug_note_svg(counter_file, note);
 	}
